@@ -40,6 +40,17 @@ $apis = [
     new DocSection('storage', 'Edge Storage API', StorageClient::class, '$storage', [Bunny::class, StorageRegion::class], SETUP . "\n\$storage = \$bunny->storage('my-zone', 'zone-password', StorageRegion::Falkenstein);", [
         new DocTarget(null, StorageClient::class, 'Files and directories of one storage zone.'),
     ]),
+    'stream',
+];
+
+/**
+ * Generated APIs whose client is not a property of Bunny: how the examples
+ * reach it.
+ *
+ * @var array<string, array{accessor: string, setup: string}> $entryPoints
+ */
+$entryPoints = [
+    'stream' => ['accessor' => '$stream', 'setup' => SETUP . "\n\$stream = \$bunny->stream(12345, 'library-api-key');"],
 ];
 
 $sections = [];
@@ -70,7 +81,8 @@ foreach ($apis as $api) {
     }
 
     $client = "GoSuccess\\Bunny\\{$config->namespace}\\{$config->client}";
-    $sections[] = new DocSection($config->name, $config->title, $client, "\$bunny->{$config->name}", [Bunny::class], SETUP, $targets);
+    $entryPoint = $entryPoints[$config->name] ?? ['accessor' => "\$bunny->{$config->name}", 'setup' => SETUP];
+    $sections[] = new DocSection($config->name, $config->title, $client, $entryPoint['accessor'], [Bunny::class], $entryPoint['setup'], $targets);
 }
 
 $docs = dirname(__DIR__) . '/docs';

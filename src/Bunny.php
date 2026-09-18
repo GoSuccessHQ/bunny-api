@@ -6,6 +6,7 @@ namespace GoSuccess\Bunny;
 
 use GoSuccess\Bunny\Core\CoreClient;
 use GoSuccess\Bunny\Core\Model\StorageZone;
+use GoSuccess\Bunny\Core\Model\VideoLibrary;
 use GoSuccess\Bunny\Http\CurlHttpClient;
 use GoSuccess\Bunny\Http\HttpClient;
 use GoSuccess\Bunny\Logging\LoggingClient;
@@ -14,6 +15,7 @@ use GoSuccess\Bunny\RateLimit\NullRateLimiter;
 use GoSuccess\Bunny\RateLimit\RateLimiter;
 use GoSuccess\Bunny\Storage\StorageClient;
 use GoSuccess\Bunny\Storage\StorageRegion;
+use GoSuccess\Bunny\Stream\StreamClient;
 use InvalidArgumentException;
 use SensitiveParameter;
 
@@ -116,6 +118,37 @@ final class Bunny
             $this->rateLimiter,
             $host !== null && $host !== '' ? "https://{$host}" : null,
         );
+    }
+
+    /**
+     * A client for the Stream API of one video library.
+     *
+     * Stream authenticates with the library's API key instead of the account
+     * API key; the read-only API key works for reading.
+     */
+    public function stream(
+        int $libraryId,
+        #[SensitiveParameter]
+        string $apiKey,
+    ): StreamClient {
+        return new StreamClient($libraryId, $apiKey, $this->options, $this->httpClient, $this->rateLimiter);
+    }
+
+    /**
+     * A client for a video library as the Core API returns it, e.g. from
+     * `$bunny->core->videoLibraries->get($id)`, which includes its API keys.
+     *
+     * @param bool $readOnly Use the read-only API key.
+     */
+    public function streamFor(VideoLibrary $library, bool $readOnly = false): StreamClient
+    {
+        $apiKey = $readOnly ? $library->readOnlyApiKey : $library->apiKey;
+
+        if ($apiKey === null || $apiKey === '') {
+            throw new InvalidArgumentException('The video library has no API key; fetch it with $bunny->core->videoLibraries->get().');
+        }
+
+        return $this->stream($library->id, $apiKey);
     }
 
     /**

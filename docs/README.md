@@ -233,3 +233,54 @@ Files and directories of one storage zone.
 - [`createDirectory()`](storage/client/createDirectory.md) — Create a directory, including missing parents
 - [`delete()`](storage/client/delete.md) — Delete a file, or a directory with everything in it when the path ends with a slash
 - [`deleteDirectory()`](storage/client/deleteDirectory.md) — Delete a directory with everything in it
+
+## Stream API
+
+Client `StreamClient` in `GoSuccess\Bunny\Stream`, reached via `$stream`.
+
+### `videos`
+
+Videos of the library: uploads, metadata, captions, thumbnails, encoding and playback data.
+
+- [`list()`](stream/videos/list.md) — List Videos
+- [`all()`](stream/videos/all.md) — Iterate lazily over every item of list(), across all pages
+- [`get()`](stream/videos/get.md) — Get Video
+- [`create()`](stream/videos/create.md) — Create Video
+- [`update()`](stream/videos/update.md) — Update Video
+- [`delete()`](stream/videos/delete.md) — Delete Video
+- [`upload()`](stream/videos/upload.md) — Upload the file of a video created with create()
+- [`fetch()`](stream/videos/fetch.md) — Create a video from a URL: bunny.net downloads and encodes the file
+- [`setThumbnail()`](stream/videos/setThumbnail.md) — Set the thumbnail to an image bunny.net fetches from a URL
+- [`useGeneratedThumbnail()`](stream/videos/useGeneratedThumbnail.md) — Use one of the five thumbnails generated while encoding
+- [`uploadThumbnail()`](stream/videos/uploadThumbnail.md) — Upload the thumbnail image
+- [`addCaption()`](stream/videos/addCaption.md) — Add or replace the captions of one language
+- [`deleteCaption()`](stream/videos/deleteCaption.md) — Delete Caption
+- [`transcribe()`](stream/videos/transcribe.md) — Transcribe video
+- [`smartGenerate()`](stream/videos/smartGenerate.md) — Trigger Smart actions
+- [`reencode()`](stream/videos/reencode.md) — Reencode Video
+- [`addOutputCodec()`](stream/videos/addOutputCodec.md) — Add output codec to video
+- [`repackage()`](stream/videos/repackage.md) — Repackage Video
+- [`resolutions()`](stream/videos/resolutions.md) — Video resolutions info
+- [`cleanupResolutions()`](stream/videos/cleanupResolutions.md) — Cleanup unconfigured resolutions
+- [`storageSize()`](stream/videos/storageSize.md) — Get video storage size info
+- [`heatmap()`](stream/videos/heatmap.md) — Get Video Heatmap
+- [`playData()`](stream/videos/playData.md) — Get Video play data
+- [`playHeatmap()`](stream/videos/playHeatmap.md) — Get the raw heatmap data the player shows on its timeline
+- [`oEmbed()`](stream/videos/oEmbed.md) — Get oEmbed data
+
+### `collections`
+
+Collections that group the videos of the library.
+
+- [`list()`](stream/collections/list.md) — Get Collection List
+- [`all()`](stream/collections/all.md) — Iterate lazily over every item of list(), across all pages
+- [`get()`](stream/collections/get.md) — Get Collection
+- [`create()`](stream/collections/create.md) — Create Collection
+- [`update()`](stream/collections/update.md) — Update Collection
+- [`delete()`](stream/collections/delete.md) — Delete Collection
+
+### `statistics`
+
+View and watch time statistics of the library or of one video.
+
+- [`get()`](stream/statistics/get.md) — Get Video Statistics

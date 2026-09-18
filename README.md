@@ -28,7 +28,7 @@ A modern, strongly-typed, **dependency-free** PHP client for the
 | [Origin Errors API](https://bunny.net/docs/cdn/logging/origin-errors) | `GoSuccess\Bunny\OriginErrors` | `$bunny->originErrors` | ✅ |
 | [CDN Logging API](https://bunny.net/docs/cdn/logging) | `GoSuccess\Bunny\Logging` | `$bunny->logging` | ✅ |
 | [Edge Storage API](https://bunny.net/docs/api-reference/storage) | `GoSuccess\Bunny\Storage` | `$bunny->storage(...)` | ✅ |
-| Stream API | `GoSuccess\Bunny\Stream` | | planned |
+| [Stream API](https://bunny.net/docs/api-reference/stream) | `GoSuccess\Bunny\Stream` | `$bunny->stream(...)` | ✅ |
 | Shield API | `GoSuccess\Bunny\Shield` | | planned |
 | Edge Scripting API | `GoSuccess\Bunny\EdgeScripting` | | planned |
 | Magic Containers API | `GoSuccess\Bunny\MagicContainers` | | planned |
@@ -260,6 +260,96 @@ limited by the regular request timeout but by `ClientOptions::$transferTimeout`
 `describe()`, `exists()`, `createDirectory()` and the `contentType` of an upload
 use parts of the API that the specification does not document; they behave the
 way bunny.net's own CLI uses them.
+
+## Stream API
+
+Stream authenticates with the video library's own API key, not the account API
+key, and every path contains the library ID. The client takes both once:
+
+```php
+use GoSuccess\Bunny\Http\Stream;
+use GoSuccess\Bunny\Stream\Model\VideoUpdate;
+
+$stream = $bunny->stream(12345, 'library-api-key');
+
+// Or straight from the Core API, which returns the library with its API keys:
+$stream = $bunny->streamFor($bunny->core->videoLibraries->get(12345));
+
+// Create a video, then upload its file; the file is streamed, not loaded into memory.
+$video = $stream->videos->create('Product tour');
+$stream->videos->upload($video->guid, Stream::fromFile('tour.mp4'), enabledResolutions: ['720p', '1080p']);
+
+// Or let bunny.net download it; returns the GUID of the new video.
+$guid = $stream->videos->fetch('https://example.com/tour.mp4', title: 'Product tour');
+
+foreach ($stream->videos->all(search: 'tour') as $video) {
+    echo $video->title, ': ', $video->status?->name, ', ', $video->views, ' views', PHP_EOL;
+}
+
+$stream->videos->update($video->guid, new VideoUpdate(title: 'Product tour 2026'));
+$stream->videos->addCaption($video->guid, 'en', Stream::fromFile('tour.en.vtt'), label: 'English');
+$stream->videos->useGeneratedThumbnail($video->guid, 3);
+
+$statistics = $stream->statistics->get(dateFrom: new DateTimeImmutable('-7 days'), videoGuid: $video->guid);
+```
+
+A client with the read-only key (`streamFor($library, readOnly: true)`) can call
+every reading method except `videos->storageSize()`, which bunny.net only answers
+for the full key.
+
+### Uploads from the browser
+
+Large files are best uploaded resumably with [TUS](https://tus.io), straight
+from the browser to bunny.net. Presign the upload on your server, so the API key
+never leaves it:
+
+```php
+use GoSuccess\Bunny\Stream\Upload\TusUpload;
+
+$video = $stream->videos->create('Product tour');
+$upload = TusUpload::presign($stream->libraryId, 'library-api-key', $video->guid, new DateTimeImmutable('+1 day'));
+
+// Hand both to a TUS client such as tus-js-client:
+$upload->endpoint;   // https://video.bunnycdn.com/tusupload
+$upload->headers;    // AuthorizationSignature, AuthorizationExpire, LibraryId, VideoId
+```
+
+TUS clients that expect the raw `Upload-Metadata` header get it from
+`TusUpload::metadata('video/mp4', 'Product tour')`.
+
+### Embed token authentication
+
+When a library requires signed embed URLs, sign them with the library's token
+authentication key (dashboard → Stream → library → Security):
+
+```php
+use GoSuccess\Bunny\Stream\Security\EmbedToken;
+
+$url = EmbedToken::url($libraryId, $videoGuid, 'token-authentication-key', new DateTimeImmutable('+1 hour'), ['autoplay' => true]);
+```
+
+### Webhooks
+
+Bunny Stream signs its webhook calls with the library's read-only API key.
+`WebhookSignature::parse()` verifies the signature against the exact raw body in
+constant time and returns the event:
+
+```php
+use GoSuccess\Bunny\Exception\InvalidSignatureException;
+use GoSuccess\Bunny\Stream\Webhook\WebhookSignature;
+use GoSuccess\Bunny\Stream\Webhook\WebhookStatus;
+
+try {
+    $event = WebhookSignature::parse(file_get_contents('php://input'), getallheaders(), 'library-read-only-api-key');
+} catch (InvalidSignatureException) {
+    http_response_code(401);
+    exit;
+}
+
+if ($event->status === WebhookStatus::Finished) {
+    // The video $event->videoId is encoded and ready to play.
+}
+```
 
 ## Partial updates and clearing fields
 
