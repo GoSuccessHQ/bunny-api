@@ -89,6 +89,32 @@ final class CurlHttpClientTest extends TestCase
         self::assertSame((string) \strlen($data), $echo['headers']['content-length']);
     }
 
+    public function testStreamBodySendsNoMoreThanItsSize(): void
+    {
+        $stream = Stream::fromString('abcdefghij');
+        fseek($stream->resource, 2);
+
+        $echo = $this->decode($this->send(new Request(
+            Method::Patch,
+            $this->uri('/echo'),
+            ['Content-Type' => 'application/offset+octet-stream'],
+            new Stream($stream->resource, 5),
+        )));
+
+        self::assertSame('PATCH', $echo['method']);
+        self::assertSame('cdefg', $echo['body']);
+        self::assertSame(7, ftell($stream->resource));
+    }
+
+    public function testHeadReturnsTheHeadersWithoutWaitingForABody(): void
+    {
+        $response = $this->send(new Request(Method::Head, $this->uri('/echo'), timeout: 5.0));
+
+        self::assertSame(200, $response->statusCode);
+        self::assertSame('one', $response->header('x-custom'));
+        self::assertSame('', $response->body);
+    }
+
     public function testSuccessfulResponseIsWrittenToTheSink(): void
     {
         $sink = Stream::temporary();

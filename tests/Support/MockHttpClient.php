@@ -103,8 +103,9 @@ final class MockHttpClient implements HttpClient
             return $body;
         }
 
+        // Like a real transport: a stream with a size sends exactly that many bytes.
         $position = $body->position();
-        $contents = $body->contents();
+        $contents = $body->size === null ? $body->contents() : (string) stream_get_contents($body->resource, $body->size);
 
         if ($position !== null && $body->isSeekable) {
             fseek($body->resource, $position);

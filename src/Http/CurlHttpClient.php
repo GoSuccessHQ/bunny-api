@@ -91,6 +91,11 @@ final class CurlHttpClient implements HttpClient
             },
         ];
 
+        if ($request->method === Method::Head) {
+            // Otherwise cURL waits for a body that never comes.
+            $options[\CURLOPT_NOBODY] = true;
+        }
+
         $timeout = $request->timeout ?? $this->timeout;
         $options[\CURLOPT_TIMEOUT_MS] = $this->milliseconds($timeout);
 
@@ -131,15 +136,25 @@ final class CurlHttpClient implements HttpClient
 
         if ($body instanceof Stream) {
             $resource = $body->resource;
+            // A stream with a size sends exactly that many bytes, e.g. one chunk of a file.
+            $remaining = $body->size;
             $options[\CURLOPT_UPLOAD] = true;
-            $options[\CURLOPT_READFUNCTION] = static function (CurlHandle $_handle, mixed $_input, int $length) use ($resource): string {
-                if ($length < 1) {
+            $options[\CURLOPT_READFUNCTION] = static function (CurlHandle $_handle, mixed $_input, int $length) use ($resource, &$remaining): string {
+                if ($length < 1 || ($remaining !== null && $remaining < 1)) {
                     return '';
                 }
 
-                $chunk = fread($resource, $length);
+                $chunk = fread($resource, $remaining === null ? $length : min($length, $remaining));
 
-                return $chunk === false ? '' : $chunk;
+                if ($chunk === false) {
+                    return '';
+                }
+
+                if ($remaining !== null) {
+                    $remaining -= \strlen($chunk);
+                }
+
+                return $chunk;
             };
 
             if ($body->size !== null) {
