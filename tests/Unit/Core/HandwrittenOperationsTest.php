@@ -109,7 +109,9 @@ final class HandwrittenOperationsTest extends TestCase
         self::assertSame(30, $page->totalItems);
         self::assertSame(3, $page->next);
 
-        self::assertNull(Pagination::page(['CurrentPage' => 3, 'HasMoreItems' => false], [])->next);
+        self::assertNull(Pagination::page(['CurrentPage' => 3, 'HasMoreItems' => false], ['a'])->next);
+        // An empty page ends the list, even if the API claims otherwise.
+        self::assertNull(Pagination::page(['CurrentPage' => 3, 'HasMoreItems' => true], [])->next);
     }
 
     public function testContinuationPaginationStopsOnAnEmptyToken(): void

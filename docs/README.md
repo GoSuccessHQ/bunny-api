@@ -205,3 +205,15 @@ Client `OriginErrorsClient` in `GoSuccess\Bunny\OriginErrors`, reached via `$bun
 Requests the CDN could not complete because the origin failed.
 
 - [`get()`](origin-errors/client/get.md) — Get the origin errors of a pull zone on one day
+
+## CDN Logging API
+
+Client `LoggingClient` in `GoSuccess\Bunny\Logging`, reached via `$bunny->logging`.
+
+### `logs`
+
+Raw CDN request logs of the last 3 days.
+
+- [`list()`](logging/logs/list.md) — Query CDN access logs for a pull zone
+- [`all()`](logging/logs/all.md) — Iterate lazily over every item of list(), across all pages
+- [`legacy()`](logging/logs/legacy.md) — Download the log of one day through the legacy v1 endpoint

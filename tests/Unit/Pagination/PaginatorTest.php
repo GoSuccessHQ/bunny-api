@@ -6,6 +6,7 @@ namespace GoSuccess\Bunny\Tests\Unit\Pagination;
 
 use GoSuccess\Bunny\Pagination\Page;
 use GoSuccess\Bunny\Pagination\Paginator;
+use LogicException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -48,11 +49,16 @@ final class PaginatorTest extends TestCase
         self::assertSame(1, $calls);
     }
 
-    public function testStopsOnAnEmptyPageEvenIfMoreAreAnnounced(): void
+    public function testFollowsEmptyPagesThatAnnounceMore(): void
     {
-        $paginator = new Paginator(static fn(int|string|null $position): Page => new Page([], next: 2));
+        // e.g. the Logging API filters rows after fetching a page.
+        $paginator = new Paginator(static fn(int|string|null $position): Page => match ($position) {
+            null => new Page([], next: 100),
+            100 => new Page(['a']),
+            default => throw new LogicException('Unexpected position.'),
+        });
 
-        self::assertSame([], iterator_to_array($paginator));
+        self::assertSame(['a'], iterator_to_array($paginator));
     }
 
     public function testStopsWhenThePositionDoesNotAdvance(): void

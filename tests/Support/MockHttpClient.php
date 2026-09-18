@@ -63,6 +63,13 @@ final class MockHttpClient implements HttpClient
             throw $next;
         }
 
+        // Like a real transport: a successful body goes to the sink, if any.
+        if ($request->sink !== null && $next->isSuccessful) {
+            fwrite($request->sink->resource, $next->body);
+
+            return new Response($next->statusCode, '', $next->headers, $next->reasonPhrase);
+        }
+
         return $next;
     }
 

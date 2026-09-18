@@ -26,7 +26,7 @@ A modern, strongly-typed, **dependency-free** PHP client for the
 | --- | --- | --- | --- |
 | [Core Platform API](https://bunny.net/docs/api-reference/core) | `GoSuccess\Bunny\Core` | `$bunny->core` | ✅ |
 | [Origin Errors API](https://bunny.net/docs/cdn/logging/origin-errors) | `GoSuccess\Bunny\OriginErrors` | `$bunny->originErrors` | ✅ |
-| CDN Logging API | `GoSuccess\Bunny\Logging` | | planned |
+| [CDN Logging API](https://bunny.net/docs/cdn/logging) | `GoSuccess\Bunny\Logging` | `$bunny->logging` | ✅ |
 | Edge Storage API | `GoSuccess\Bunny\Storage` | | planned |
 | Stream API | `GoSuccess\Bunny\Stream` | | planned |
 | Shield API | `GoSuccess\Bunny\Shield` | | planned |
@@ -188,6 +188,35 @@ foreach ($log->errors as $error) {
 
 The day is taken in UTC. bunny.net only retains recent days and does not
 document how to fetch more errors when `$log->hasMoreData` is set.
+
+## CDN Logging API
+
+Raw request logs of the last 3 days, filtered on the server:
+
+```php
+foreach ($bunny->logging->logs->all($pullZoneId, from: new DateTimeImmutable('-24 hours'), status: '4xx,5xx', country: 'DE') as $entry) {
+    echo $entry->timestamp->format(DATE_ATOM), ' ', $entry->statusCode, ' ', $entry->url, PHP_EOL;
+}
+```
+
+`status`, `cacheStatus` and `country` take comma-separated lists; the time
+range must lie within the retention window. bunny.net allows 30 requests per 10
+seconds and pull zone.
+
+The legacy v1 endpoint returns a whole day as a pipe-delimited file. The client
+streams it into a temporary file and parses the lines while you iterate, so
+even large logs use little memory:
+
+```php
+$log = $bunny->logging->logs->legacy($pullZoneId, new DateTimeImmutable('yesterday'));
+
+foreach ($log as $entry) {
+    // LegacyLogEntry
+}
+
+// Keep the raw file:
+stream_copy_to_stream($log->stream->resource, fopen('access.log', 'wb'));
+```
 
 ## Partial updates and clearing fields
 

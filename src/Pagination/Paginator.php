@@ -42,10 +42,9 @@ final readonly class Paginator implements IteratorAggregate
                 yield $index++ => $item;
             }
 
-            // Stop on an empty page or a position that does not advance, so a
-            // misbehaving endpoint cannot cause an endless loop.
+            // A position that does not advance would repeat the same page forever.
             $previous = $position;
-            $position = $page->items === [] || $page->next === $previous ? null : $page->next;
+            $position = $page->next === $previous ? null : $page->next;
         } while ($position !== null);
     }
 }

@@ -34,6 +34,7 @@ $apis = [
     new DocSection('origin-errors', 'Origin Errors API', OriginErrorsClient::class, '$bunny->originErrors', [Bunny::class], SETUP, [
         new DocTarget(null, OriginErrorsClient::class, 'Requests the CDN could not complete because the origin failed.'),
     ]),
+    'logging',
 ];
 
 $sections = [];

@@ -17,6 +17,10 @@ final class Pagination
     /**
      * Page-numbered lists: `{"Items", "CurrentPage", "TotalItems", "HasMoreItems"}`.
      *
+     * An empty page ends the list even if more items are announced: the API
+     * reports HasMoreItems wrongly for page sizes below 5, which it silently
+     * raises to 5.
+     *
      * @template T
      *
      * @param array<array-key, mixed> $data
@@ -27,7 +31,7 @@ final class Pagination
     public static function page(array $data, array $items): Page
     {
         $current = Cast::int($data['CurrentPage'] ?? null) ?? 1;
-        $hasMore = Cast::bool($data['HasMoreItems'] ?? null) ?? false;
+        $hasMore = $items !== [] && (Cast::bool($data['HasMoreItems'] ?? null) ?? false);
 
         return new Page(
             items: $items,

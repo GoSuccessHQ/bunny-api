@@ -7,6 +7,7 @@ namespace GoSuccess\Bunny;
 use GoSuccess\Bunny\Core\CoreClient;
 use GoSuccess\Bunny\Http\CurlHttpClient;
 use GoSuccess\Bunny\Http\HttpClient;
+use GoSuccess\Bunny\Logging\LoggingClient;
 use GoSuccess\Bunny\OriginErrors\OriginErrorsClient;
 use GoSuccess\Bunny\RateLimit\NullRateLimiter;
 use GoSuccess\Bunny\RateLimit\RateLimiter;
@@ -43,6 +44,13 @@ final class Bunny
      */
     public private(set) OriginErrorsClient $originErrors {
         get => $this->originErrors ??= new OriginErrorsClient($this->apiKey, $this->options, $this->httpClient, $this->rateLimiter);
+    }
+
+    /**
+     * The CDN Logging API: raw request logs of the last 3 days.
+     */
+    public private(set) LoggingClient $logging {
+        get => $this->logging ??= new LoggingClient($this->apiKey, $this->options, $this->httpClient, $this->rateLimiter);
     }
 
     private readonly HttpClient $httpClient;

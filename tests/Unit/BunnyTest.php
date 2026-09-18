@@ -7,6 +7,7 @@ namespace GoSuccess\Bunny\Tests\Unit;
 use GoSuccess\Bunny\Bunny;
 use GoSuccess\Bunny\Core\CoreClient;
 use GoSuccess\Bunny\Http\Response;
+use GoSuccess\Bunny\Logging\LoggingClient;
 use GoSuccess\Bunny\OriginErrors\OriginErrorsClient;
 use GoSuccess\Bunny\Tests\Support\MockHttpClient;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -25,6 +26,7 @@ final class BunnyTest extends TestCase
         self::assertSame(3, $bunny->core->pullZones->count());
         self::assertSame('account-key', $http->requests[0]->headers['AccessKey']);
         self::assertInstanceOf(OriginErrorsClient::class, $bunny->originErrors);
+        self::assertInstanceOf(LoggingClient::class, $bunny->logging);
     }
 
     public function testHidesTheApiKeyFromDumps(): void
