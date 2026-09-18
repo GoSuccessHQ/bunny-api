@@ -27,6 +27,31 @@ return [
 
     'properties' => [],
 
+    // Public IP endpoints are created with an "internalIp" section that the
+    // specification lacks; bunny.net's Terraform provider sends it this way
+    // (internal/api/compute_container_app.go), and the API returns it in its
+    // endpoint suggestions (verified live).
+    'additions' => [
+        'schemas' => [
+            'InternalIpEndpointRequest' => [
+                'type' => 'object',
+                'description' => 'The settings of a public IP endpoint.',
+                'properties' => [
+                    'portMappings' => [
+                        'type' => 'array',
+                        'items' => ['$ref' => '#/components/schemas/ContainerPortMappingRequest'],
+                    ],
+                ],
+            ],
+        ],
+        'properties' => [
+            'EndpointRequest.internalIp' => ['$ref' => '#/components/schemas/InternalIpEndpointRequest', 'nullable' => true],
+        ],
+    ],
+
+    // An endpoint uses one of its sections; the others arrive as null (verified live).
+    'nullableProperties' => ['EndpointRequest.cdn', 'EndpointRequest.anycast'],
+
     'enumCases' => [],
 
     'extraModels' => [],
@@ -121,8 +146,18 @@ return [
                 'create' => ['operation' => 'AddContainerRegistry', 'parameters' => ['@body' => 'registry']],
                 'update' => ['operation' => 'UpdateContainerRegistry', 'parameters' => ['@body' => 'registry']],
                 'delete' => ['operation' => 'DeleteContainerRegistry'],
-                'images' => ['operation' => 'ListContainerImages', 'flatten' => true],
-                'searchPublicImages' => ['operation' => 'SearchForPublicContainerImages', 'flatten' => true],
+                // Verified live: needs stored credentials; the public registries answer 404.
+                'images' => [
+                    'operation' => 'ListContainerImages',
+                    'flatten' => true,
+                    'note' => 'Needs a registry with stored credentials; for the public Docker Hub and GitHub registries the API answers 404.',
+                ],
+                // Verified live: Docker Hub answers with its first 10 matches whatever the size and page.
+                'searchPublicImages' => [
+                    'operation' => 'SearchForPublicContainerImages',
+                    'flatten' => true,
+                    'note' => 'Docker Hub answers with its first 10 matches, whatever size and page (from 1) say.',
+                ],
                 'tags' => ['operation' => 'ListContainerImageTags', 'flatten' => true],
                 'imageConfig' => ['operation' => 'GetImageConfig', 'flatten' => true],
                 'digest' => ['operation' => 'GetContainerImageTagDigest', 'flatten' => true],

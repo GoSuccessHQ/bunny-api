@@ -110,6 +110,8 @@ final class RegistryResource extends AbstractResource
      *
      * Lists all container images available in a private registry.
      *
+     * Needs a registry with stored credentials; for the public Docker Hub and GitHub registries the API answers 404.
+     *
      * `POST /registries/images`
      *
      * @param string $registryId The registry identifier. Can be "dockerhub", "github", or a private registry ID.
@@ -131,6 +133,8 @@ final class RegistryResource extends AbstractResource
      * Search Public Container Images
      *
      * Searches for public container images in a registry by prefix.
+     *
+     * Docker Hub answers with its first 10 matches, whatever size and page (from 1) say.
      *
      * `POST /registries/public-images/search`
      *

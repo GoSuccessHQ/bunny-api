@@ -6,6 +6,8 @@ Search Public Container Images
 
 Searches for public container images in a registry by prefix.
 
+Docker Hub answers with its first 10 matches, whatever size and page (from 1) say.
+
 ## Signature
 
 ```php

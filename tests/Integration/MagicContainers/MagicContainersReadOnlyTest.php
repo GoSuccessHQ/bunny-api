@@ -6,8 +6,10 @@ namespace GoSuccess\Bunny\Tests\Integration\MagicContainers;
 
 use GoSuccess\Bunny\Bunny;
 use GoSuccess\Bunny\Exception\BadRequestException;
+use GoSuccess\Bunny\Exception\NotFoundException;
 use GoSuccess\Bunny\MagicContainers\MagicContainersClient;
 use GoSuccess\Bunny\MagicContainers\Model\ApplicationListItem;
+use GoSuccess\Bunny\MagicContainers\Model\ContainerImageTag;
 use GoSuccess\Bunny\MagicContainers\Model\ContainerRegistry;
 use GoSuccess\Bunny\MagicContainers\Model\Region;
 use GoSuccess\Bunny\Tests\Integration\IntegrationTestCase;
@@ -16,8 +18,8 @@ use PHPUnit\Framework\Attributes\CoversNothing;
 /**
  * Read-only checks of the Magic Containers API against a real account.
  *
- * Only side-effect-free GET requests are made; the registry lookups that the
- * API offers as POST requests are left out.
+ * Only requests without side effects are made: GETs and the registry lookups,
+ * which use POST.
  */
 #[CoversNothing]
 final class MagicContainersReadOnlyTest extends IntegrationTestCase
@@ -41,6 +43,24 @@ final class MagicContainersReadOnlyTest extends IntegrationTestCase
             self::fail('Expected a BadRequestException.');
         } catch (BadRequestException $e) {
             self::assertSame('limit', $e->field);
+        }
+    }
+
+    public function testRegistryLookups(): void
+    {
+        $registries = self::client()->registries;
+
+        self::assertNotEmpty($registries->searchPublicImages('dockerhub', 'nginx'));
+        self::assertContains('latest', array_map(static fn(ContainerImageTag $tag): string => $tag->name, $registries->tags('dockerhub', 'nginx', 'library')));
+        self::assertStringStartsWith('sha256:', $registries->digest('dockerhub', 'nginx', 'library', 'latest')->digest);
+        self::assertNotEmpty($registries->imageConfig('dockerhub', 'nginx', 'library', 'latest')->endpointSuggestions);
+        self::assertNotEmpty($registries->configSuggestions('dockerhub', 'nginx', 'library', 'latest')->endpointSuggestions);
+
+        try {
+            $registries->images('dockerhub');
+            self::fail('Expected a NotFoundException.');
+        } catch (NotFoundException) {
+            // Listing images needs a registry with stored credentials.
         }
     }
 

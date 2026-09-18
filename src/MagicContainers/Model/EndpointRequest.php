@@ -16,9 +16,12 @@ final readonly class EndpointRequest implements RequestModel, ResponseModel
 {
     public string $displayName;
 
-    public CdnEndpointRequest $cdn;
+    public ?CdnEndpointRequest $cdn;
 
-    public AnycastEndpointRequest $anycast;
+    public ?AnycastEndpointRequest $anycast;
+
+    /** The settings of a public IP endpoint. */
+    public ?InternalIpEndpointRequest $internalIp;
 
     /**
      * Payload keys the caller provided; toArray() sends exactly these.
@@ -29,16 +32,19 @@ final readonly class EndpointRequest implements RequestModel, ResponseModel
 
     public function __construct(
         string|Undefined $displayName = Undefined::Value,
-        CdnEndpointRequest|Undefined $cdn = Undefined::Value,
-        AnycastEndpointRequest|Undefined $anycast = Undefined::Value,
+        CdnEndpointRequest|Undefined|null $cdn = Undefined::Value,
+        AnycastEndpointRequest|Undefined|null $anycast = Undefined::Value,
+        InternalIpEndpointRequest|Undefined|null $internalIp = Undefined::Value,
     ) {
         $this->displayName = $displayName instanceof Undefined ? '' : $displayName;
-        $this->cdn = $cdn instanceof Undefined ? new CdnEndpointRequest() : $cdn;
-        $this->anycast = $anycast instanceof Undefined ? new AnycastEndpointRequest() : $anycast;
+        $this->cdn = $cdn instanceof Undefined ? null : $cdn;
+        $this->anycast = $anycast instanceof Undefined ? null : $anycast;
+        $this->internalIp = $internalIp instanceof Undefined ? null : $internalIp;
         $this->provided = array_filter([
             'displayName' => !$displayName instanceof Undefined,
             'cdn' => !$cdn instanceof Undefined,
             'anycast' => !$anycast instanceof Undefined,
+            'internalIp' => !$internalIp instanceof Undefined,
         ]);
     }
 
@@ -48,6 +54,7 @@ final readonly class EndpointRequest implements RequestModel, ResponseModel
             displayName: Cast::string($data['displayName'] ?? null) ?? Undefined::Value,
             cdn: Cast::model(CdnEndpointRequest::class, $data['cdn'] ?? null) ?? Undefined::Value,
             anycast: Cast::model(AnycastEndpointRequest::class, $data['anycast'] ?? null) ?? Undefined::Value,
+            internalIp: Cast::model(InternalIpEndpointRequest::class, $data['internalIp'] ?? null) ?? Undefined::Value,
         );
     }
 
@@ -60,11 +67,15 @@ final readonly class EndpointRequest implements RequestModel, ResponseModel
         }
 
         if (isset($this->provided['cdn'])) {
-            $data['cdn'] = $this->cdn->toArray();
+            $data['cdn'] = $this->cdn?->toArray();
         }
 
         if (isset($this->provided['anycast'])) {
-            $data['anycast'] = $this->anycast->toArray();
+            $data['anycast'] = $this->anycast?->toArray();
+        }
+
+        if (isset($this->provided['internalIp'])) {
+            $data['internalIp'] = $this->internalIp?->toArray();
         }
 
         return $data;
