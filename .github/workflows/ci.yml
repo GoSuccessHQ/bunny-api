@@ -38,3 +38,30 @@ jobs:
 
       - name: Tests (phpunit)
         run: vendor/bin/phpunit --testsuite unit
+
+  codegen:
+    name: Generated code and docs are up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Regenerate code and docs
+        run: composer generate
+
+      - name: Fail if generated files are out of date
+        run: |
+          git add -A
+          if ! git diff --cached --exit-code; then
+            echo "::error::Generated files are out of date. Run 'composer generate' and commit the result."
+            exit 1
+          fi
