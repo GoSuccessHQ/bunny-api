@@ -103,7 +103,7 @@ final class ResourceWriter
         $itemDoc = $itemType->doc($file->alias(...));
 
         [$class, $function] = explode('::', $pagination->factory, 2);
-        $factory = $file->alias("GoSuccess\\Bunny\\{$this->config->namespace}\\{$class}") . "::{$function}";
+        $factory = $file->alias($this->config->referencedClass($class)) . "::{$function}";
 
         $call = $this->call($method, $file, $method->parameters);
         $items = $this->read(new PhpType(PhpType::LIST, item: $itemType), "\$data['{$pagination->items}'] ?? null", null, $file);

@@ -24,8 +24,8 @@ final readonly class PaginationConfig
      * @param int|null        $pageSize Default page size of the list method.
      * @param int|null        $allSize  Page size used when iterating over all items.
      * @param string          $items    Response property holding the items.
-     * @param string          $factory  "Class::method" relative to the API namespace, called as
-     *                                  factory(array $data, list $items): Page.
+     * @param string          $factory  "Class::method", see ApiConfig::referencedClass(), called
+     *                                  as factory(array $data, list $items): Page.
      */
     public function __construct(
         public string $name,

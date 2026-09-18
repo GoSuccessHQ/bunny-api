@@ -36,9 +36,11 @@ final readonly class ResourceConfig
     public static function fromArray(string $property, ConfigReader $reader): self
     {
         $methods = [];
+        // Parameter names shared by all methods, e.g. "id" => "scriptId".
+        $parameters = $reader->stringMapAt('parameters');
 
         foreach ($reader->map('methods') as $name => $method) {
-            $methods[(string) $name] = MethodConfig::fromArray((string) $name, $reader->nested($method, "methods.{$name}"));
+            $methods[(string) $name] = MethodConfig::fromArray((string) $name, $reader->nested($method, "methods.{$name}"), $parameters);
         }
 
         $instance = new self(

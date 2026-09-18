@@ -74,7 +74,7 @@ final class ClientWriter
 
         if ($this->config->errorStatus !== null) {
             [$class, $function] = explode('::', $this->config->errorStatus, 2);
-            $errorStatus = '            errorStatus: ' . $file->alias("GoSuccess\\Bunny\\{$this->config->namespace}\\{$class}") . "::{$function}(...),\n";
+            $errorStatus = '            errorStatus: ' . $file->alias($this->config->referencedClass($class)) . "::{$function}(...),\n";
         }
 
         $promoted = '';

@@ -36,7 +36,7 @@ final readonly class ApiConfig
      *                                                               an object with only it and error properties is unwrapped.
      * @param list<string>                        $errorProperties   Properties that carry the error of a failed request in a
      *                                                               successful response; left out of the models.
-     * @param string|null                         $errorStatus       "Class::method" relative to the API namespace, called as
+     * @param string|null                         $errorStatus       "Class::method", see referencedClass(), called as
      *                                                               method(Response): ?int to spot errors in 2xx responses.
      * @param array<string, PaginationConfig>     $pagination        Pagination styles, keyed by name.
      * @param array<string, ResourceConfig>       $resources         Keyed by the client property name.
@@ -134,6 +134,16 @@ final readonly class ApiConfig
     public function fqcn(string $subNamespace, string $class): string
     {
         return "GoSuccess\\Bunny\\{$this->namespace}\\{$subNamespace}\\{$class}";
+    }
+
+    /**
+     * The class of a "Class::method" reference in the configuration: relative
+     * to the API namespace, or to GoSuccess\Bunny if it names a namespace,
+     * e.g. "Core\Pagination" for an API that shares Core's page format.
+     */
+    public function referencedClass(string $class): string
+    {
+        return str_contains($class, '\\') ? "GoSuccess\\Bunny\\{$class}" : "GoSuccess\\Bunny\\{$this->namespace}\\{$class}";
     }
 
     public function directory(): string

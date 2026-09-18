@@ -52,7 +52,10 @@ final readonly class MethodConfig
         public ?string $note = null,
     ) {}
 
-    public static function fromArray(string $name, ConfigReader $reader): self
+    /**
+     * @param array<string, string> $parameters Parameter names of the resource, overridden by the method's.
+     */
+    public static function fromArray(string $name, ConfigReader $reader, array $parameters = []): self
     {
         $instance = new self(
             name: $name,
@@ -65,7 +68,7 @@ final readonly class MethodConfig
             nullable: $reader->bool('nullable'),
             body: $reader->optionalString('body'),
             flatten: $reader->bool('flatten'),
-            parameters: $reader->stringMapAt('parameters'),
+            parameters: [...$parameters, ...$reader->stringMapAt('parameters')],
             hidden: $reader->stringList('hidden'),
             required: $reader->stringList('required'),
             parameterTypes: $reader->stringMapAt('parameterTypes'),
