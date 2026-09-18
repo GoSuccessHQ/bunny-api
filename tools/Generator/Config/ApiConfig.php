@@ -29,6 +29,11 @@ final readonly class ApiConfig
      * @param list<string>                        $extraModels       Schemas generated for hand-written code.
      * @param list<string>                        $stringMaps        Objects ("Schema.property") to treat as maps of strings,
      *                                                               e.g. a closed object listing every possible key.
+     * @param list<string>                        $nullableProperties Properties ("Schema.property") the API sends as null
+     *                                                               although the specification says it never does.
+     * @param array<string, array<array-key, mixed>> $additionalSchemas Schemas the specification lacks, by name.
+     * @param array<string, array<array-key, mixed>> $additionalProperties Properties the specification lacks, by
+     *                                                               "Schema.property".
      * @param array<string, array{type: string, description: string}> $clientParameters Path parameters the client
      *                                                               receives once in its constructor instead of every method.
      * @param list<string>                        $voidResponses     Schemas that carry no payload, e.g. a bare status envelope.
@@ -58,6 +63,9 @@ final readonly class ApiConfig
         public array $enumCases,
         public array $extraModels,
         public array $stringMaps,
+        public array $nullableProperties,
+        public array $additionalSchemas,
+        public array $additionalProperties,
         public array $clientParameters,
         public array $voidResponses,
         public ?string $envelope,
@@ -99,6 +107,12 @@ final readonly class ApiConfig
             $parameter->assertNoUnknownKeys();
         }
 
+        // Additions to the specification, each backed by evidence, e.g. bunny.net's own code.
+        $additions = $reader->nested($reader->map('additions'), 'additions');
+        $additionalSchemas = self::fragments($additions->map('schemas'), 'additions.schemas');
+        $additionalProperties = self::fragments($additions->map('properties'), 'additions.properties');
+        $additions->assertNoUnknownKeys();
+
         $enumCases = [];
 
         foreach ($reader->map('enumCases') as $schema => $cases) {
@@ -119,6 +133,9 @@ final readonly class ApiConfig
             enumCases: $enumCases,
             extraModels: $reader->stringList('extraModels'),
             stringMaps: $reader->stringList('stringMaps'),
+            nullableProperties: $reader->stringList('nullableProperties'),
+            additionalSchemas: $additionalSchemas,
+            additionalProperties: $additionalProperties,
             clientParameters: $clientParameters,
             voidResponses: $reader->stringList('voidResponses'),
             envelope: $reader->optionalString('envelope'),
@@ -133,6 +150,28 @@ final readonly class ApiConfig
         $reader->assertNoUnknownKeys();
 
         return $instance;
+    }
+
+    /**
+     * Schema fragments keyed by name.
+     *
+     * @param array<array-key, mixed> $map
+     *
+     * @return array<string, array<array-key, mixed>>
+     */
+    private static function fragments(array $map, string $context): array
+    {
+        $fragments = [];
+
+        foreach ($map as $name => $fragment) {
+            if (!\is_string($name) || !\is_array($fragment)) {
+                throw new RuntimeException("{$context}: expected schema fragments keyed by name.");
+            }
+
+            $fragments[$name] = $fragment;
+        }
+
+        return $fragments;
     }
 
     public function fqcn(string $subNamespace, string $class): string

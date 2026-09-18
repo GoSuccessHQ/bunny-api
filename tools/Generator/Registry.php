@@ -203,7 +203,7 @@ final class Registry
                 jsonName: $json,
                 phpName: $phpName,
                 type: $type,
-                nullable: $property->isNullable() || $resolved->isNullable(),
+                nullable: $property->isNullable() || $resolved->isNullable() || \in_array("{$source}.{$json}", $this->config->nullableProperties, true),
                 required: \in_array($json, $required, true),
                 readOnly: $property->isReadOnly() || $resolved->isReadOnly(),
                 deprecated: $property->isDeprecated(),

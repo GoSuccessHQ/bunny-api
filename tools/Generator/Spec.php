@@ -45,6 +45,56 @@ final class Spec
         return new self($name, $file, $document);
     }
 
+    /**
+     * The specification with schemas and properties it lacks. Adding what it
+     * already documents fails, so an addition is noticed once it is obsolete.
+     *
+     * @param array<string, array<array-key, mixed>> $schemas    By name.
+     * @param array<string, array<array-key, mixed>> $properties By "Schema.property".
+     */
+    public function patched(array $schemas, array $properties): self
+    {
+        if ($schemas === [] && $properties === []) {
+            return $this;
+        }
+
+        $document = $this->document;
+        $components = \is_array($document['components'] ?? null) ? $document['components'] : [];
+        $existing = \is_array($components['schemas'] ?? null) ? $components['schemas'] : [];
+
+        foreach ($schemas as $name => $schema) {
+            if (isset($existing[$name])) {
+                throw new RuntimeException("{$this->name} documents the schema {$name} now; remove the addition.");
+            }
+
+            $existing[$name] = $schema;
+        }
+
+        foreach ($properties as $path => $schema) {
+            [$schemaName, $property] = explode('.', $path, 2) + [1 => ''];
+            $target = $existing[$schemaName] ?? null;
+
+            if (!\is_array($target) || $property === '') {
+                throw new RuntimeException("{$this->name}: cannot add {$path}, the schema {$schemaName} does not exist.");
+            }
+
+            $known = \is_array($target['properties'] ?? null) ? $target['properties'] : [];
+
+            if (isset($known[$property])) {
+                throw new RuntimeException("{$this->name} documents {$path} now; remove the addition.");
+            }
+
+            $known[$property] = $schema;
+            $target['properties'] = $known;
+            $existing[$schemaName] = $target;
+        }
+
+        $components['schemas'] = $existing;
+        $document['components'] = $components;
+
+        return new self($this->name, $this->file, $document);
+    }
+
     public function hasSchema(string $name): bool
     {
         return isset($this->components()[$name]);

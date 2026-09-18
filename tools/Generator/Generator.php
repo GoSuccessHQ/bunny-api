@@ -34,7 +34,8 @@ final class Generator
     public function analyze(): Analysis
     {
         $config = ApiConfig::load($this->configFile);
-        $spec = Spec::load($config->spec, "{$this->root}/resources/specs/{$config->spec}.json");
+        $spec = Spec::load($config->spec, "{$this->root}/resources/specs/{$config->spec}.json")
+            ->patched($config->additionalSchemas, $config->additionalProperties);
         $this->checkSchemaNames($spec, $config);
         $registry = new Registry($spec, $config);
         $builder = new ResourceBuilder($registry);
@@ -125,6 +126,7 @@ final class Generator
             ...$config->extraModels,
             ...$config->voidResponses,
             ...$config->stringMaps,
+            ...$config->nullableProperties,
         ]);
         $unknown = array_unique(array_filter($names, static fn(string $name): bool => !$spec->hasSchema($name)));
 
