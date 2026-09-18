@@ -17,21 +17,22 @@ A modern, strongly-typed, **dependency-free** PHP client for the
   applied twice.
 - **Typed exceptions** that normalize the error formats of all bunny.net APIs and
   carry the `cdn-requestid` for support cases.
-- **Generated from bunny.net's specifications**, with every deviation between
-  specification and reality corrected by hand and verified against the live API.
+- **Generated from bunny.net's specifications**, with the deviations between
+  specification and reality corrected by hand, based on read-only checks against
+  the live API and on bunny.net's own tools.
 
 ## Supported APIs
 
-| API | Namespace | Access | Status |
-| --- | --- | --- | --- |
-| [Core Platform API](https://bunny.net/docs/api-reference/core) | `GoSuccess\Bunny\Core` | `$bunny->core` | ✅ |
-| [Origin Errors API](https://bunny.net/docs/cdn/logging/origin-errors) | `GoSuccess\Bunny\OriginErrors` | `$bunny->originErrors` | ✅ |
-| [CDN Logging API](https://bunny.net/docs/cdn/logging) | `GoSuccess\Bunny\Logging` | `$bunny->logging` | ✅ |
-| [Edge Storage API](https://bunny.net/docs/api-reference/storage) | `GoSuccess\Bunny\Storage` | `$bunny->storage(...)` | ✅ |
-| [Stream API](https://bunny.net/docs/api-reference/stream) | `GoSuccess\Bunny\Stream` | `$bunny->stream(...)` | ✅ |
-| [Shield API](https://bunny.net/docs/api-reference/shield) | `GoSuccess\Bunny\Shield` | `$bunny->shield` | ✅ |
-| [Edge Scripting API](https://bunny.net/docs/api-reference/scripting) | `GoSuccess\Bunny\EdgeScripting` | `$bunny->edgeScripting` | ✅ |
-| [Magic Containers API](https://bunny.net/docs/api-reference/magic-containers) | `GoSuccess\Bunny\MagicContainers` | `$bunny->magicContainers` | ✅ |
+| API | Namespace | Access |
+| --- | --- | --- |
+| [Core Platform API](https://bunny.net/docs/api-reference/core) | `GoSuccess\Bunny\Core` | `$bunny->core` |
+| [Origin Errors API](https://bunny.net/docs/cdn/logging/origin-errors) | `GoSuccess\Bunny\OriginErrors` | `$bunny->originErrors` |
+| [CDN Logging API](https://bunny.net/docs/cdn/logging) | `GoSuccess\Bunny\Logging` | `$bunny->logging` |
+| [Edge Storage API](https://bunny.net/docs/api-reference/storage) | `GoSuccess\Bunny\Storage` | `$bunny->storage(...)` |
+| [Stream API](https://bunny.net/docs/api-reference/stream) | `GoSuccess\Bunny\Stream` | `$bunny->stream(...)` |
+| [Shield API](https://bunny.net/docs/api-reference/shield) | `GoSuccess\Bunny\Shield` | `$bunny->shield` |
+| [Edge Scripting API](https://bunny.net/docs/api-reference/scripting) | `GoSuccess\Bunny\EdgeScripting` | `$bunny->edgeScripting` |
+| [Magic Containers API](https://bunny.net/docs/api-reference/magic-containers) | `GoSuccess\Bunny\MagicContainers` | `$bunny->magicContainers` |
 
 ## Requirements
 
@@ -623,12 +624,13 @@ connection and TLS session caches across requests of a PHP worker.
 
 ## Development
 
-The enums, models, resources and clients under `src/<Api>/` (except the
-`Handwritten/` directories) are generated from the committed snapshots of
-bunny.net's specifications in [resources/specs/](resources/specs/). Naming
-decisions and every correction of the specifications live in
-[tools/config/](tools/config/), each correction with the evidence it is based
-on.
+Most enums, models, resources and clients under `src/<Api>/` are generated
+from the committed snapshots of bunny.net's specifications in
+[resources/specs/](resources/specs/); they start with a "This file is generated"
+comment. Everything else is written by hand, e.g. the `Handwritten/` traits of
+the resources. Naming decisions and every correction of the specifications
+live in [tools/config/](tools/config/), each correction with the evidence it is
+based on.
 
 ```bash
 composer generate   # regenerate code and docs from the snapshots
