@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 use GoSuccess\Bunny\Bunny;
 use GoSuccess\Bunny\OriginErrors\OriginErrorsClient;
+use GoSuccess\Bunny\Storage\StorageClient;
+use GoSuccess\Bunny\Storage\StorageRegion;
 use GoSuccess\Bunny\Tools\Generator\Docs\DocSection;
 use GoSuccess\Bunny\Tools\Generator\Docs\DocsGenerator;
 use GoSuccess\Bunny\Tools\Generator\Docs\DocTarget;
@@ -35,6 +37,9 @@ $apis = [
         new DocTarget(null, OriginErrorsClient::class, 'Requests the CDN could not complete because the origin failed.'),
     ]),
     'logging',
+    new DocSection('storage', 'Edge Storage API', StorageClient::class, '$storage', [Bunny::class, StorageRegion::class], SETUP . "\n\$storage = \$bunny->storage('my-zone', 'zone-password', StorageRegion::Falkenstein);", [
+        new DocTarget(null, StorageClient::class, 'Files and directories of one storage zone.'),
+    ]),
 ];
 
 $sections = [];

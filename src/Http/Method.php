@@ -16,6 +16,12 @@ enum Method: string
     case Delete = 'DELETE';
 
     /**
+     * Returns the metadata of an Edge Storage object. Not part of any
+     * specification; bunny.net's own CLI uses it.
+     */
+    case Describe = 'DESCRIBE';
+
+    /**
      * Whether repeating the request has the same effect as sending it once.
      *
      * bunny.net uses POST for most updates, which are therefore never retried
@@ -24,7 +30,7 @@ enum Method: string
     public function isIdempotent(): bool
     {
         return match ($this) {
-            self::Get, self::Put, self::Delete => true,
+            self::Get, self::Put, self::Delete, self::Describe => true,
             self::Post, self::Patch => false,
         };
     }

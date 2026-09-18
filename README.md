@@ -27,7 +27,7 @@ A modern, strongly-typed, **dependency-free** PHP client for the
 | [Core Platform API](https://bunny.net/docs/api-reference/core) | `GoSuccess\Bunny\Core` | `$bunny->core` | ✅ |
 | [Origin Errors API](https://bunny.net/docs/cdn/logging/origin-errors) | `GoSuccess\Bunny\OriginErrors` | `$bunny->originErrors` | ✅ |
 | [CDN Logging API](https://bunny.net/docs/cdn/logging) | `GoSuccess\Bunny\Logging` | `$bunny->logging` | ✅ |
-| Edge Storage API | `GoSuccess\Bunny\Storage` | | planned |
+| [Edge Storage API](https://bunny.net/docs/api-reference/storage) | `GoSuccess\Bunny\Storage` | `$bunny->storage(...)` | ✅ |
 | Stream API | `GoSuccess\Bunny\Stream` | | planned |
 | Shield API | `GoSuccess\Bunny\Shield` | | planned |
 | Edge Scripting API | `GoSuccess\Bunny\EdgeScripting` | | planned |
@@ -217,6 +217,49 @@ foreach ($log as $entry) {
 // Keep the raw file:
 stream_copy_to_stream($log->stream->resource, fopen('access.log', 'wb'));
 ```
+
+## Edge Storage API
+
+Edge Storage authenticates with the storage zone's password, not the account
+API key, and every region has its own host:
+
+```php
+use GoSuccess\Bunny\Http\Stream;
+use GoSuccess\Bunny\Storage\StorageRegion;
+
+$storage = $bunny->storage('my-zone', 'zone-password', StorageRegion::NewYork);
+
+// Or straight from the Core API, which returns the zone with its passwords:
+$storage = $bunny->storageFor($bunny->core->storageZones->get($storageZoneId));
+
+// Upload from a string or, without loading it into memory, from a stream.
+$storage->upload('images/logo.png', file_get_contents('logo.png'));
+$storage->upload('videos/intro.mp4', Stream::fromFile('intro.mp4'), contentType: 'video/mp4');
+
+// Download into memory or into a stream.
+$html = $storage->get('index.html');
+$storage->download('backups/db.sql.gz', Stream::fromFile('db.sql.gz', 'wb'));
+
+foreach ($storage->list('images/') as $object) {
+    echo $object->relativePath, ' ', $object->length, ' bytes', PHP_EOL;
+}
+
+$storage->describe('images/logo.png');   // metadata, without downloading
+$storage->exists('images/logo.png');     // true or false
+$storage->createDirectory('archive/2026');
+$storage->delete('images/old.png');
+$storage->deleteDirectory('archive');    // with everything in it
+```
+
+Uploads send the file's SHA-256 checksum, so bunny.net rejects a corrupted
+upload; pass `verifyChecksum: false` to skip the extra read. Deleting the root of
+a zone requires `deleteDirectory('/', allowRoot: true)`. Transfers are not
+limited by the regular request timeout but by `ClientOptions::$transferTimeout`
+(unlimited by default; a stalled transfer is aborted after 60 seconds).
+
+`describe()`, `exists()`, `createDirectory()` and the `contentType` of an upload
+use parts of the API that the specification does not document; they behave the
+way bunny.net's own CLI uses them.
 
 ## Partial updates and clearing fields
 

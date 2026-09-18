@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace GoSuccess\Bunny;
 
 use GoSuccess\Bunny\Core\CoreClient;
+use GoSuccess\Bunny\Core\Model\StorageZone;
 use GoSuccess\Bunny\Http\CurlHttpClient;
 use GoSuccess\Bunny\Http\HttpClient;
 use GoSuccess\Bunny\Logging\LoggingClient;
 use GoSuccess\Bunny\OriginErrors\OriginErrorsClient;
 use GoSuccess\Bunny\RateLimit\NullRateLimiter;
 use GoSuccess\Bunny\RateLimit\RateLimiter;
+use GoSuccess\Bunny\Storage\StorageClient;
+use GoSuccess\Bunny\Storage\StorageRegion;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -69,6 +73,49 @@ final class Bunny
         private readonly RateLimiter $rateLimiter = new NullRateLimiter(),
     ) {
         $this->httpClient = $httpClient ?? new CurlHttpClient($options->timeout, $options->connectTimeout);
+    }
+
+    /**
+     * A client for the Edge Storage API of one storage zone.
+     *
+     * Edge Storage authenticates with the zone's password instead of the
+     * account API key; the read-only password works for listing and downloading.
+     */
+    public function storage(
+        string $zone,
+        #[SensitiveParameter]
+        string $password,
+        StorageRegion $region = StorageRegion::Falkenstein,
+    ): StorageClient {
+        return new StorageClient($zone, $password, $region, $this->options, $this->httpClient, $this->rateLimiter);
+    }
+
+    /**
+     * A client for a storage zone as the Core API returns it, e.g. from
+     * `$bunny->core->storageZones->get($id)`, which includes the zone's passwords.
+     *
+     * @param bool $readOnly Use the read-only password, which only allows listing and downloading.
+     */
+    public function storageFor(StorageZone $zone, bool $readOnly = false): StorageClient
+    {
+        $password = $readOnly ? $zone->readOnlyPassword : $zone->password;
+
+        if ($zone->name === null || $password === null || $password === '') {
+            throw new InvalidArgumentException('The storage zone has no name or password; fetch it with $bunny->core->storageZones->get().');
+        }
+
+        $region = StorageRegion::tryFrom(strtolower($zone->region ?? '')) ?? StorageRegion::Falkenstein;
+        $host = $zone->storageHostname;
+
+        return new StorageClient(
+            $zone->name,
+            $password,
+            $region,
+            $this->options,
+            $this->httpClient,
+            $this->rateLimiter,
+            $host !== null && $host !== '' ? "https://{$host}" : null,
+        );
     }
 
     /**

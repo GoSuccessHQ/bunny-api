@@ -217,3 +217,19 @@ Raw CDN request logs of the last 3 days.
 - [`list()`](logging/logs/list.md) — Query CDN access logs for a pull zone
 - [`all()`](logging/logs/all.md) — Iterate lazily over every item of list(), across all pages
 - [`legacy()`](logging/logs/legacy.md) — Download the log of one day through the legacy v1 endpoint
+
+## Edge Storage API
+
+Client `StorageClient` in `GoSuccess\Bunny\Storage`, reached via `$storage`.
+
+Files and directories of one storage zone.
+
+- [`list()`](storage/client/list.md) — List the files and directories in a directory
+- [`describe()`](storage/client/describe.md) — Get the metadata of a file or directory without downloading it
+- [`exists()`](storage/client/exists.md) — Whether a file or directory exists
+- [`get()`](storage/client/get.md) — Download a file into memory. For large files, use download()
+- [`download()`](storage/client/download.md) — Download a file into a stream, e.g. `Stream::fromFile('backup.zip', 'wb')`
+- [`upload()`](storage/client/upload.md) — Upload a file. Missing directories are created; an existing file is replaced
+- [`createDirectory()`](storage/client/createDirectory.md) — Create a directory, including missing parents
+- [`delete()`](storage/client/delete.md) — Delete a file, or a directory with everything in it when the path ends with a slash
+- [`deleteDirectory()`](storage/client/deleteDirectory.md) — Delete a directory with everything in it
