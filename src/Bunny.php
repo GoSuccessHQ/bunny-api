@@ -7,6 +7,7 @@ namespace GoSuccess\Bunny;
 use GoSuccess\Bunny\Core\CoreClient;
 use GoSuccess\Bunny\Core\Model\StorageZone;
 use GoSuccess\Bunny\Core\Model\VideoLibrary;
+use GoSuccess\Bunny\EdgeScripting\EdgeScriptingClient;
 use GoSuccess\Bunny\Http\CurlHttpClient;
 use GoSuccess\Bunny\Http\HttpClient;
 use GoSuccess\Bunny\Logging\LoggingClient;
@@ -58,6 +59,14 @@ final class Bunny
      */
     public private(set) LoggingClient $logging {
         get => $this->logging ??= new LoggingClient($this->apiKey, $this->options, $this->httpClient, $this->rateLimiter);
+    }
+
+    /**
+     * The Edge Scripting API: scripts that run on bunny.net's edge, with their
+     * code, releases, variables and secrets.
+     */
+    public private(set) EdgeScriptingClient $edgeScripting {
+        get => $this->edgeScripting ??= new EdgeScriptingClient($this->apiKey, $this->options, $this->httpClient, $this->rateLimiter);
     }
 
     /**

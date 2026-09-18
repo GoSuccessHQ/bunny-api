@@ -42,16 +42,18 @@ $apis = [
     ]),
     'stream',
     'shield',
+    'edge-scripting',
 ];
 
 /**
- * Generated APIs whose client is not a property of Bunny: how the examples
- * reach it.
+ * Generated APIs whose client is not the Bunny property named like the API:
+ * how the examples reach it.
  *
  * @var array<string, array{accessor: string, setup: string}> $entryPoints
  */
 $entryPoints = [
     'stream' => ['accessor' => '$stream', 'setup' => SETUP . "\n\$stream = \$bunny->stream(12345, 'library-api-key');"],
+    'edge-scripting' => ['accessor' => '$bunny->edgeScripting', 'setup' => SETUP],
 ];
 
 $sections = [];

@@ -422,3 +422,52 @@ The DDoS settings catalog.
 Shield promotions of the account.
 
 - [`state()`](shield/promotions/state.md) — Get the Shield promotions of the account
+
+## Edge Scripting API
+
+Client `EdgeScriptingClient` in `GoSuccess\Bunny\EdgeScripting`, reached via `$bunny->edgeScripting`.
+
+### `scripts`
+
+Edge scripts: their settings, code, statistics and deployment key.
+
+- [`list()`](edge-scripting/scripts/list.md) — List Edge Scripts
+- [`all()`](edge-scripting/scripts/all.md) — Iterate lazily over every item of list(), across all pages
+- [`get()`](edge-scripting/scripts/get.md) — Get Edge Script
+- [`create()`](edge-scripting/scripts/create.md) — Add Edge Script
+- [`update()`](edge-scripting/scripts/update.md) — Update Edge Script
+- [`delete()`](edge-scripting/scripts/delete.md) — Delete Edge Script
+- [`statistics()`](edge-scripting/scripts/statistics.md) — Get Edge Script Statistics
+- [`code()`](edge-scripting/scripts/code.md) — Get Code
+- [`setCode()`](edge-scripting/scripts/setCode.md) — Set Code
+- [`rotateDeploymentKey()`](edge-scripting/scripts/rotateDeploymentKey.md) — Rotate Deployment Key
+
+### `releases`
+
+Releases of edge scripts: the published versions of their code.
+
+- [`list()`](edge-scripting/releases/list.md) — Get Releases
+- [`all()`](edge-scripting/releases/all.md) — Iterate lazily over every item of list(), across all pages
+- [`active()`](edge-scripting/releases/active.md) — Get Active Release
+- [`publish()`](edge-scripting/releases/publish.md) — Publish Release
+- [`publishRelease()`](edge-scripting/releases/publishRelease.md) — Publish Release
+
+### `variables`
+
+Environment variables of edge scripts.
+
+- [`get()`](edge-scripting/variables/get.md) — Get Variable
+- [`create()`](edge-scripting/variables/create.md) — Add Variable
+- [`update()`](edge-scripting/variables/update.md) — Update Variable
+- [`upsert()`](edge-scripting/variables/upsert.md) — Upsert Variable
+- [`delete()`](edge-scripting/variables/delete.md) — Delete Variable
+
+### `secrets`
+
+Secrets of edge scripts; their values can be written, never read.
+
+- [`list()`](edge-scripting/secrets/list.md) — List Secrets
+- [`create()`](edge-scripting/secrets/create.md) — Add Secret
+- [`update()`](edge-scripting/secrets/update.md) — Update Secret
+- [`upsert()`](edge-scripting/secrets/upsert.md) — Upsert Secret
+- [`delete()`](edge-scripting/secrets/delete.md) — Delete Secret

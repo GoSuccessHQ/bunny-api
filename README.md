@@ -30,7 +30,7 @@ A modern, strongly-typed, **dependency-free** PHP client for the
 | [Edge Storage API](https://bunny.net/docs/api-reference/storage) | `GoSuccess\Bunny\Storage` | `$bunny->storage(...)` | ✅ |
 | [Stream API](https://bunny.net/docs/api-reference/stream) | `GoSuccess\Bunny\Stream` | `$bunny->stream(...)` | ✅ |
 | [Shield API](https://bunny.net/docs/api-reference/shield) | `GoSuccess\Bunny\Shield` | `$bunny->shield` | ✅ |
-| Edge Scripting API | `GoSuccess\Bunny\EdgeScripting` | | planned |
+| [Edge Scripting API](https://bunny.net/docs/api-reference/scripting) | `GoSuccess\Bunny\EdgeScripting` | `$bunny->edgeScripting` | ✅ |
 | Magic Containers API | `GoSuccess\Bunny\MagicContainers` | | planned |
 
 ## Requirements
@@ -422,6 +422,31 @@ Shield answers many failures, "not found" among them, with `202 Accepted` and
 the error in the body. The client raises them like error statuses (see
 [Error handling](#error-handling)), so a missing rule never comes back as an
 empty object.
+
+## Edge Scripting API
+
+Edge scripts run on bunny.net's edge. Create one, upload its code and publish
+it; variables and secrets reach the script as environment variables:
+
+```php
+use GoSuccess\Bunny\EdgeScripting\Enum\EdgeScriptType;
+
+$scripting = $bunny->edgeScripting;
+
+// CDN is what the dashboard calls a standalone script; DNS and Middleware are the others.
+$script = $scripting->scripts->create('hello-edge', EdgeScriptType::CDN, createLinkedPullZone: true);
+$scripting->scripts->setCode($script->id, file_get_contents('script.ts'));
+$scripting->variables->create($script->id, 'GREETING', required: true, defaultValue: 'Hello');
+$scripting->secrets->upsert($script->id, 'API_TOKEN', 'secret-value');
+$scripting->releases->publish($script->id, note: 'First release');
+
+foreach ($scripting->scripts->all() as $script) {
+    echo $script->name, ': ', $script->defaultHostname, PHP_EOL;
+}
+```
+
+Secret values can be written but never read back; `secrets->list()` returns
+their names only.
 
 ## Partial updates and clearing fields
 
