@@ -87,6 +87,21 @@ final class Spec
 
         $operations = [];
         $paths = \is_array($this->document['paths'] ?? null) ? $this->document['paths'] : [];
+        $idCounts = [];
+
+        foreach ($paths as $item) {
+            if (!\is_array($item)) {
+                continue;
+            }
+
+            foreach (self::METHODS as $method) {
+                $operationId = \is_array($item[$method] ?? null) ? Operation::operationId($item[$method]) : null;
+
+                if ($operationId !== null) {
+                    $idCounts[$operationId] = ($idCounts[$operationId] ?? 0) + 1;
+                }
+            }
+        }
 
         foreach ($paths as $path => $item) {
             if (!\is_array($item)) {
@@ -102,7 +117,9 @@ final class Spec
                     continue;
                 }
 
-                $operation = new Operation($this, strtoupper($method), (string) $path, $node, $shared);
+                // An operationId used twice (e.g. for PUT and PATCH) identifies neither.
+                $ambiguous = ($idCounts[Operation::operationId($node) ?? ''] ?? 0) > 1;
+                $operation = new Operation($this, strtoupper($method), (string) $path, $node, $shared, $ambiguous);
                 $operations[$operation->id] = $operation;
             }
         }

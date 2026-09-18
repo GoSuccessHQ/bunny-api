@@ -17,6 +17,8 @@ final class Operation
     /**
      * @param array<array-key, mixed> $node
      * @param array<array-key, mixed> $sharedParameters Path-level parameters.
+     * @param bool                    $ambiguousId      Whether other operations share the operationId,
+     *                                                  in which case "METHOD /path" identifies it.
      */
     public function __construct(
         public readonly Spec $spec,
@@ -24,9 +26,10 @@ final class Operation
         public readonly string $path,
         public readonly array $node,
         array $sharedParameters = [],
+        bool $ambiguousId = false,
     ) {
-        $operationId = $node['operationId'] ?? null;
-        $this->id = \is_string($operationId) && $operationId !== '' ? $operationId : "{$method} {$path}";
+        $operationId = self::operationId($node);
+        $this->id = $operationId !== null && !$ambiguousId ? $operationId : "{$method} {$path}";
 
         $parameters = [];
 
@@ -39,6 +42,16 @@ final class Operation
         }
 
         $this->parameters = array_values($parameters);
+    }
+
+    /**
+     * @param array<array-key, mixed> $node
+     */
+    public static function operationId(array $node): ?string
+    {
+        $operationId = $node['operationId'] ?? null;
+
+        return \is_string($operationId) && $operationId !== '' ? $operationId : null;
     }
 
     public function summary(): ?string

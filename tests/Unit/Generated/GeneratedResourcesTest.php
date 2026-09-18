@@ -156,6 +156,13 @@ final class GeneratedResourcesTest extends TestCase
         $path = ltrim($method->operation->path, '/');
 
         foreach ($method->parameters as $parameter) {
+            if ($parameter->location === ParameterDefinition::BOUND) {
+                // Filled from the path parameter, which precedes it.
+                $fields[$parameter->specName] = $arguments[$parameter->phpName];
+
+                continue;
+            }
+
             $value = $samples->php($parameter->type);
             $arguments[$parameter->phpName] = $value;
 

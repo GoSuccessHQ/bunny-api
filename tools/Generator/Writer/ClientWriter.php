@@ -70,6 +70,13 @@ final class ClientWriter
             $parameters,
         )], '    ');
 
+        $errorStatus = '';
+
+        if ($this->config->errorStatus !== null) {
+            [$class, $function] = explode('::', $this->config->errorStatus, 2);
+            $errorStatus = '            errorStatus: ' . $file->alias("GoSuccess\\Bunny\\{$this->config->namespace}\\{$class}") . "::{$function}(...),\n";
+        }
+
         $promoted = '';
 
         foreach ($this->config->clientParameters as $name => $parameter) {
@@ -96,6 +103,7 @@ final class ClientWriter
             . "            \$options,\n"
             . "            \$httpClient ?? new {$curl}(\$options->timeout, \$options->connectTimeout),\n"
             . "            \$rateLimiter,\n"
+            . $errorStatus
             . "        );\n"
             . "    }\n}\n";
 

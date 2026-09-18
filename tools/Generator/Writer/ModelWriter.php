@@ -129,7 +129,17 @@ final class ModelWriter
             }
 
             $name = $property->phpName;
-            $assignments .= "        \$this->{$name} = \${$name} instanceof {$undefined} ? {$read['default']} : \${$name};\n";
+            $value = "\${$name}";
+
+            if ($property->type->kind === PhpType::DATE) {
+                // The constructor takes any DateTimeInterface; the property is immutable.
+                $immutable = $file->alias('DateTimeImmutable');
+                $value = str_contains($write['native'], 'null')
+                    ? "(\${$name} === null ? null : {$immutable}::createFromInterface(\${$name}))"
+                    : "{$immutable}::createFromInterface(\${$name})";
+            }
+
+            $assignments .= "        \$this->{$name} = \${$name} instanceof {$undefined} ? {$read['default']} : {$value};\n";
 
             $key = $this->escape($property->jsonName);
 

@@ -48,6 +48,7 @@ final class ApiExceptionTest extends TestCase
         yield 'logging' => ['{"error":{"code":"forbidden","message":"No access","details":null}}', 'No access', 'forbidden', null];
         yield 'problem details' => ['{"type":"x","title":"Not Found","status":404,"detail":"App missing"}', 'App missing', null, null];
         yield 'shield envelope' => ['{"data":null,"error":{"success":false,"message":"Zone missing","errorKey":"shield.zone"}}', 'Zone missing', 'shield.zone', null];
+        yield 'shield errorResponse' => ['{"logs":null,"errorResponse":{"success":false,"message":"Rule missing","errorKey":"not_found.waf_rule"}}', 'Rule missing', 'not_found.waf_rule', null];
         yield 'plain text' => ['Bad Gateway', 'Bad Gateway', null, null];
         yield 'empty' => ['', null, null, null];
     }

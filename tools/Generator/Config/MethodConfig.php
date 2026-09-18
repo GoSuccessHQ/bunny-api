@@ -17,8 +17,9 @@ final readonly class MethodConfig
      * @param string|null               $pagination  Pagination style; generates a page method
      *                                               and, if $all is set, a paginator method.
      * @param string|null               $all         Name of the paginator method.
-     * @param string|null               $response    Response override: a schema name,
-     *                                               "list:<Schema>", "page:<Schema>" or "void".
+     * @param string|null               $response    Response override: a schema name (the item
+     *                                               schema of paginated methods), "list:<Schema>"
+     *                                               or "void".
      * @param string|null               $unwrap      Property of an envelope that holds the payload.
      * @param bool                      $nullable    Whether a successful response may have no body.
      * @param string|null               $body        Request body schema override, or "none".
@@ -26,8 +27,11 @@ final readonly class MethodConfig
      *                                               method parameters instead of a model.
      * @param array<string, string>     $parameters  Spec parameter name => PHP parameter name.
      * @param list<string>              $hidden      Spec parameters that are not exposed.
-     * @param list<string>              $required    Spec query parameters to treat as required
-     *                                               where the specification marks them optional.
+     * @param list<string>              $required    Query parameters and flattened body properties to
+     *                                               treat as required where the specification marks
+     *                                               them optional.
+     * @param array<string, string>     $parameterTypes Path parameter => "int" or "string", where the
+     *                                               specification types it differently than elsewhere.
      * @param string|null               $note        Extra paragraph for the docblock.
      */
     public function __construct(
@@ -44,6 +48,7 @@ final readonly class MethodConfig
         public array $parameters = [],
         public array $hidden = [],
         public array $required = [],
+        public array $parameterTypes = [],
         public ?string $note = null,
     ) {}
 
@@ -63,6 +68,7 @@ final readonly class MethodConfig
             parameters: $reader->stringMapAt('parameters'),
             hidden: $reader->stringList('hidden'),
             required: $reader->stringList('required'),
+            parameterTypes: $reader->stringMapAt('parameterTypes'),
             note: $reader->optionalString('note'),
         );
 

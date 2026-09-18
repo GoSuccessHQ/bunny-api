@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace GoSuccess\Bunny\Http;
 
+use Closure;
 use GoSuccess\Bunny\ClientOptions;
 use GoSuccess\Bunny\Exception\ApiException;
 use GoSuccess\Bunny\Exception\RateLimitException;
@@ -33,7 +34,11 @@ final class Connection
     public readonly string $baseUri;
 
     /**
-     * @param string $accessKey Value of the `AccessKey` header.
+     * @param string                        $accessKey   Value of the `AccessKey` header.
+     * @param (Closure(Response): ?int)|null $errorStatus For APIs that answer some failures with a 2xx
+     *                                                    status: spots an error in the body of a
+     *                                                    successful response and returns the status
+     *                                                    that classifies it, or null if there is none.
      */
     public function __construct(
         string $baseUri,
@@ -43,6 +48,7 @@ final class Connection
         private readonly HttpClient $httpClient,
         private readonly RateLimiter $rateLimiter,
         private readonly Clock $clock = new SystemClock(),
+        private readonly ?Closure $errorStatus = null,
     ) {
         $baseUri = rtrim($baseUri, '/');
 
@@ -137,7 +143,13 @@ final class Connection
             }
 
             if ($response->isSuccessful) {
-                return $response;
+                $errorStatus = $this->errorStatus === null ? null : ($this->errorStatus)($response);
+
+                if ($errorStatus === null) {
+                    return $response;
+                }
+
+                throw ApiException::fromResponse($response, $request, $errorStatus);
             }
 
             if ($this->isRetryable($response->statusCode, $method) && $attempt < $this->options->maxRetries && $this->rewind($request, $bodyStart, $sinkStart)) {

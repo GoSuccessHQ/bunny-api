@@ -38,8 +38,12 @@ class ApiException extends RuntimeException implements BunnyException
 
     /**
      * Build the most specific exception type for an error response.
+     *
+     * @param int|null $classifyAs The status that decides the exception type, for an error
+     *                             reported in a successful response; the exception keeps the
+     *                             actual status in $statusCode.
      */
-    public static function fromResponse(Response $response, Request $request): self
+    public static function fromResponse(Response $response, Request $request, ?int $classifyAs = null): self
     {
         $status = $response->statusCode;
         $body = $response->body;
@@ -64,18 +68,20 @@ class ApiException extends RuntimeException implements BunnyException
 
         $arguments = [$message, $status, $body, $details->errorKey, $details->field, $requestId];
 
+        $kind = $classifyAs ?? $status;
+
         return match (true) {
-            $status === 400 => new BadRequestException(...$arguments),
-            $status === 401 => new AuthenticationException(...$arguments),
-            $status === 403 => new ForbiddenException(...$arguments),
-            $status === 404 => new NotFoundException(...$arguments),
-            $status === 409 => new ConflictException(...$arguments),
-            $status === 422 => new ValidationException(...$arguments),
-            $status === 429 => new RateLimitException(
+            $kind === 400 => new BadRequestException(...$arguments),
+            $kind === 401 => new AuthenticationException(...$arguments),
+            $kind === 403 => new ForbiddenException(...$arguments),
+            $kind === 404 => new NotFoundException(...$arguments),
+            $kind === 409 => new ConflictException(...$arguments),
+            $kind === 422 => new ValidationException(...$arguments),
+            $kind === 429 => new RateLimitException(
                 ...$arguments,
                 retryAfter: RateLimitException::parseRetryAfter($response->header('retry-after')),
             ),
-            $status >= 500 => new ServerException(...$arguments),
+            $kind >= 500 => new ServerException(...$arguments),
             default => new self(...$arguments),
         };
     }

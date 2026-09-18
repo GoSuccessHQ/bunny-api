@@ -174,7 +174,7 @@ final class ResourceWriter
      */
     private function bodyStatements(MethodDefinition $method, CodeFile $file): string
     {
-        $fields = $method->parametersIn(ParameterDefinition::BODY);
+        $fields = [...$method->parametersIn(ParameterDefinition::BODY), ...$method->parametersIn(ParameterDefinition::BOUND)];
 
         if ($fields === []) {
             return '';
@@ -224,7 +224,7 @@ final class ResourceWriter
                 ? "\${$payload->phpName}"
                 : ($payload->nullable ? "\${$payload->phpName}?->toArray()" : "\${$payload->phpName}->toArray()");
             $arguments[] = $hasQuery ? $value : "body: {$value}";
-        } elseif ($method->parametersIn(ParameterDefinition::BODY) !== []) {
+        } elseif ($method->parametersIn(ParameterDefinition::BODY) !== [] || $method->parametersIn(ParameterDefinition::BOUND) !== []) {
             $arguments[] = $hasQuery ? '$body' : 'body: $body';
         }
 
@@ -356,6 +356,10 @@ final class ResourceWriter
             PhpType::OBJECT => "{$cast}::object(...)",
             PhpType::ENUM => "static fn(mixed \$value): ?{$alias($type->classOrFail())} => {$cast}::{$type->backing}Enum({$alias($type->classOrFail())}::class, \$value)",
             PhpType::MODEL => "static fn(mixed \$value): ?{$alias($type->classOrFail())} => {$cast}::model({$alias($type->classOrFail())}::class, \$value)",
+            PhpType::LIST => $type->itemOrFail()->kind === PhpType::MODEL
+                ? "static fn(mixed \$value): array => {$cast}::modelList({$alias($type->itemOrFail()->classOrFail())}::class, \$value)"
+                : "static fn(mixed \$value): array => {$cast}::listOf(\$value, {$this->converter($type->itemOrFail(), $file)})",
+            PhpType::MAP => "static fn(mixed \$value): array => {$cast}::mapOf(\$value, {$this->converter($type->itemOrFail(), $file)})",
             PhpType::MIXED => 'static fn(mixed $value): mixed => $value',
             default => throw new LogicException("Unsupported element type {$type->kind}."),
         };
@@ -420,7 +424,8 @@ final class ResourceWriter
     }
 
     /**
-     * The parameters a caller passes; client parameters come from the client.
+     * The parameters a caller passes; client parameters come from the client
+     * and bound body properties from their path parameter.
      *
      * @param list<ParameterDefinition> $parameters
      *
@@ -428,7 +433,10 @@ final class ResourceWriter
      */
     private static function exposed(array $parameters): array
     {
-        return array_values(array_filter($parameters, static fn(ParameterDefinition $parameter): bool => $parameter->location !== ParameterDefinition::CLIENT));
+        return array_values(array_filter(
+            $parameters,
+            static fn(ParameterDefinition $parameter): bool => !\in_array($parameter->location, [ParameterDefinition::CLIENT, ParameterDefinition::BOUND], true),
+        ));
     }
 
     private function parameterDocType(ParameterDefinition $parameter, CodeFile $file): string

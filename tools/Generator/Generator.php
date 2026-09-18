@@ -104,7 +104,7 @@ final class Generator
             $deleted,
         );
 
-        foreach ([...$registry->enumBuilder->notes, ...$analysis->notes] as $note) {
+        foreach (array_unique([...$registry->enumBuilder->notes, ...$analysis->notes]) as $note) {
             $report .= "  note: {$note}\n";
         }
 
@@ -117,13 +117,15 @@ final class Generator
      */
     private function checkSchemaNames(Spec $spec, ApiConfig $config): void
     {
-        $names = [
+        // Inline objects are addressed as "Schema.property".
+        $names = array_map(static fn(string $name): string => explode('.', $name, 2)[0], [
             ...array_keys($config->schemas),
-            ...array_map(static fn(string $property): string => explode('.', $property, 2)[0], array_keys($config->properties)),
+            ...array_keys($config->properties),
             ...array_keys($config->enumCases),
             ...$config->extraModels,
             ...$config->voidResponses,
-        ];
+            ...$config->stringMaps,
+        ]);
         $unknown = array_unique(array_filter($names, static fn(string $name): bool => !$spec->hasSchema($name)));
 
         if ($unknown !== []) {

@@ -258,6 +258,24 @@ final class ConnectionTest extends TestCase
         self::assertStringNotContainsString('secret-key', $dump);
     }
 
+    public function testRaisesErrorsReportedInSuccessfulResponses(): void
+    {
+        $http = new MockHttpClient(new Response(202, '{"error":"missing"}'), new Response(200, '{"ok":true}'));
+        $errorStatus = static fn(Response $response): ?int => str_contains($response->body, 'error') ? 404 : null;
+        $connection = new Connection('https://api.bunny.net', 'secret-key', new ClientOptions(), $http, new SpyRateLimiter(), new FakeClock(), $errorStatus);
+
+        try {
+            $connection->json(Method::Get, 'thing');
+            self::fail('Expected a NotFoundException.');
+        } catch (NotFoundException $e) {
+            // Classified as 404, but the actual status is kept.
+            self::assertSame(202, $e->statusCode);
+        }
+
+        self::assertSame(['ok' => true], $connection->json(Method::Get, 'thing'));
+        self::assertCount(2, $http->requests);
+    }
+
     private function connection(
         MockHttpClient $http,
         ClientOptions $options = new ClientOptions(),

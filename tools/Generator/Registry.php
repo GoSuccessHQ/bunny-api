@@ -26,6 +26,9 @@ final class Registry
     /** @var array<string, string> Class => source, to detect two sources claiming one class. */
     private array $claims = [];
 
+    /** @var array<string, string> Model class => structure of its schema, see signature(). */
+    private array $signatures = [];
+
     public function __construct(
         public readonly Spec $spec,
         public readonly ApiConfig $config,
@@ -40,6 +43,10 @@ final class Registry
      */
     public function type(Schema $schema, string $path): PhpType
     {
+        if (\in_array($path, $this->config->stringMaps, true)) {
+            return PhpType::mapOf(PhpType::scalar(PhpType::STRING));
+        }
+
         $name = $schema->resolvedName();
 
         if ($name !== null && $this->spec->hasSchema($name)) {
@@ -151,12 +158,16 @@ final class Registry
         $class = $this->className($source, 'Model');
 
         if (isset($this->models[$class])) {
-            if ($this->models[$class]->source !== $source) {
-                throw new RuntimeException("{$source} and {$this->models[$class]->source} both map to {$class}.");
+            // Several sources may share a class if their structure is identical,
+            // e.g. copies of one inline object.
+            if ($this->models[$class]->source !== $source && $this->signatures[$class] !== self::signature($schema)) {
+                throw new RuntimeException("{$source} and {$this->models[$class]->source} both map to {$class} but differ.");
             }
 
             return $class;
         }
+
+        $this->signatures[$class] = self::signature($schema);
 
         $model = new ModelDefinition($class, $source, $schema->description(), $schema->isDeprecated());
         // Register before the properties, so self-references terminate.
@@ -166,6 +177,11 @@ final class Registry
         $names = [];
 
         foreach ($schema->properties() as $json => $property) {
+            // Errors in successful responses become exceptions in the connection.
+            if (\in_array($json, $this->config->errorProperties, true)) {
+                continue;
+            }
+
             $phpName = $this->config->properties["{$source}.{$json}"] ?? Naming::camel($json);
 
             if (isset($names[strtolower($phpName)])) {
@@ -239,13 +255,33 @@ final class Registry
         $class = $this->config->fqcn($kind, $short);
         $claimedBy = $this->claims[$class] ?? null;
 
-        if ($claimedBy !== null && $claimedBy !== $source && $kind === 'Model') {
+        // Only a configured name may be shared, and only by identical structures
+        // (checked in model()); automatic names must not collide.
+        if ($claimedBy !== null && $claimedBy !== $source && $kind === 'Model' && ($configured === null || !isset($this->config->schemas[$claimedBy]))) {
             throw new RuntimeException("{$source} and {$claimedBy} both map to {$class}.");
         }
 
         $this->claims[$class] ??= $source;
 
         return $class;
+    }
+
+    /**
+     * The structure of an object schema without its descriptions.
+     */
+    private static function signature(Schema $schema): string
+    {
+        $strip = static function (mixed $node) use (&$strip): mixed {
+            if (!\is_array($node)) {
+                return $node;
+            }
+
+            unset($node['description'], $node['example'], $node['title']);
+
+            return array_map($strip, $node);
+        };
+
+        return (string) json_encode($strip($schema->node));
     }
 
     /**

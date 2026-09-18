@@ -89,8 +89,10 @@ final class ResourceBuilder
             }
         }
 
-        foreach (array_diff($config->required, $queryNames) as $unknown) {
-            throw new RuntimeException("{$context}: {$unknown} is marked required, but is no query parameter.");
+        $bodyNames = array_map(static fn(ParameterDefinition $parameter): string => $parameter->specName, [...$bodyRequired, ...$bodyOptional]);
+
+        foreach (array_diff($config->required, $queryNames, $bodyNames) as $unknown) {
+            throw new RuntimeException("{$context}: {$unknown} is marked required, but is neither a query parameter nor a flattened body property.");
         }
 
         foreach ($operation->parametersIn('header') as $parameter) {
@@ -127,7 +129,12 @@ final class ResourceBuilder
             $parameter = $byName[$placeholder] ?? throw new RuntimeException("{$context}: path placeholder {$placeholder} is not declared.");
             unset($byName[$placeholder]);
 
-            $type = $this->registry->type($parameter->schema, "{$operation->id}.{$placeholder}");
+            $type = match ($config->parameterTypes[$placeholder] ?? null) {
+                null => $this->registry->type($parameter->schema, "{$operation->id}.{$placeholder}"),
+                'int' => PhpType::scalar(PhpType::INT),
+                'string' => PhpType::scalar(PhpType::STRING),
+                default => throw new RuntimeException("{$context}: parameter type of {$placeholder} must be int or string."),
+            };
 
             if (!\in_array($type->kind, [PhpType::INT, PhpType::STRING, PhpType::ENUM, PhpType::DATE], true)) {
                 throw new RuntimeException("{$context}: unsupported path parameter type {$type->kind} for {$placeholder}.");
@@ -219,8 +226,31 @@ final class ResourceBuilder
 
             $type = $this->registry->type($property, "{$source}.{$json}");
             $this->registry->markUsage($type, true);
-            $isRequired = \in_array($json, $requiredNames, true);
-            $propertyNullable = $property->isNullable() || $property->resolve()->isNullable();
+
+            // The body repeats a path parameter, e.g. {"shieldZoneId"} next to
+            // /shield-zone/{shieldZoneId}: send the same value.
+            if (\in_array($json, $operation->pathPlaceholders(), true)) {
+                if (isset($this->registry->config->clientParameters[$json])) {
+                    throw new RuntimeException("{$context}: body property {$json} repeats a client parameter, which is not supported.");
+                }
+
+                $required[] = new ParameterDefinition(
+                    specName: $json,
+                    phpName: $config->parameters[$json] ?? Naming::camel($json),
+                    type: $type,
+                    location: ParameterDefinition::BOUND,
+                    nullable: false,
+                    default: null,
+                    description: null,
+                );
+
+                continue;
+            }
+
+            // Marked required in the configuration: a value is expected, not null.
+            $forced = \in_array($json, $config->required, true);
+            $isRequired = $forced || \in_array($json, $requiredNames, true);
+            $propertyNullable = !$forced && ($property->isNullable() || $property->resolve()->isNullable());
 
             $definition = new ParameterDefinition(
                 specName: $json,
@@ -291,6 +321,22 @@ final class ResourceBuilder
         );
     }
 
+    /**
+     * The payload property of an envelope such as `{"data": …, "error": …}`:
+     * an object with the configured envelope property and error properties only.
+     */
+    private function envelopeProperty(Schema $schema): ?string
+    {
+        $envelope = $this->registry->config->envelope;
+        $properties = array_keys($schema->resolve()->properties());
+
+        if ($envelope === null || !\in_array($envelope, $properties, true)) {
+            return null;
+        }
+
+        return array_diff($properties, [$envelope, ...$this->registry->config->errorProperties]) === [] ? $envelope : null;
+    }
+
     private function response(MethodDefinition $method, MethodConfig $config, Operation $operation, string $context): void
     {
         $method->unwrap = $config->unwrap;
@@ -346,9 +392,11 @@ final class ResourceBuilder
             return;
         }
 
-        if ($config->unwrap !== null) {
-            $property = $schema->resolve()->properties()[$config->unwrap] ?? throw new RuntimeException("{$context}: response has no property {$config->unwrap} to unwrap.");
-            $type = $this->registry->type($property, ($schema->resolvedName() ?? $operation->id) . ".{$config->unwrap}");
+        $method->unwrap ??= $this->envelopeProperty($schema);
+
+        if ($method->unwrap !== null) {
+            $property = $schema->resolve()->properties()[$method->unwrap] ?? throw new RuntimeException("{$context}: response has no property {$method->unwrap} to unwrap.");
+            $type = $this->registry->type($property, ($schema->resolvedName() ?? $operation->id) . ".{$method->unwrap}");
         } else {
             $type = $this->registry->type($schema, "{$operation->id}.response");
         }

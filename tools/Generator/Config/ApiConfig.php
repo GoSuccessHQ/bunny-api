@@ -27,9 +27,17 @@ final readonly class ApiConfig
      * @param array<string, string>               $properties        "Schema.Property" => PHP property name.
      * @param array<string, array<int|string, string>> $enumCases   Schema name => value => case name.
      * @param list<string>                        $extraModels       Schemas generated for hand-written code.
+     * @param list<string>                        $stringMaps        Objects ("Schema.property") to treat as maps of strings,
+     *                                                               e.g. a closed object listing every possible key.
      * @param array<string, array{type: string, description: string}> $clientParameters Path parameters the client
      *                                                               receives once in its constructor instead of every method.
      * @param list<string>                        $voidResponses     Schemas that carry no payload, e.g. a bare status envelope.
+     * @param string|null                         $envelope          Property holding the payload of enveloped responses;
+     *                                                               an object with only it and error properties is unwrapped.
+     * @param list<string>                        $errorProperties   Properties that carry the error of a failed request in a
+     *                                                               successful response; left out of the models.
+     * @param string|null                         $errorStatus       "Class::method" relative to the API namespace, called as
+     *                                                               method(Response): ?int to spot errors in 2xx responses.
      * @param array<string, PaginationConfig>     $pagination        Pagination styles, keyed by name.
      * @param array<string, ResourceConfig>       $resources         Keyed by the client property name.
      * @param array<string, string>               $ignored           Operation id => reason for not implementing it.
@@ -47,8 +55,12 @@ final readonly class ApiConfig
         public array $properties,
         public array $enumCases,
         public array $extraModels,
+        public array $stringMaps,
         public array $clientParameters,
         public array $voidResponses,
+        public ?string $envelope,
+        public array $errorProperties,
+        public ?string $errorStatus,
         public array $pagination,
         public array $resources,
         public array $ignored,
@@ -103,8 +115,12 @@ final readonly class ApiConfig
             properties: $reader->stringMapAt('properties'),
             enumCases: $enumCases,
             extraModels: $reader->stringList('extraModels'),
+            stringMaps: $reader->stringList('stringMaps'),
             clientParameters: $clientParameters,
             voidResponses: $reader->stringList('voidResponses'),
+            envelope: $reader->optionalString('envelope'),
+            errorProperties: $reader->stringList('errorProperties'),
+            errorStatus: $reader->optionalString('errorStatus'),
             pagination: $pagination,
             resources: $resources,
             ignored: $reader->stringMapAt('ignored'),

@@ -12,7 +12,8 @@ namespace GoSuccess\Bunny\Exception;
  * - Stream: `{"success", "message", "statusCode"}`
  * - Logging: `{"error": {"code", "message", "details"}}`
  * - Shield and Magic Containers: RFC 7807 problem details
- *   (`{"title", "detail", …}`) or `{"error": {"errorKey", "message"}}`
+ *   (`{"title", "detail", …}`), `{"error": {"errorKey", "message"}}` or
+ *   `{"errorResponse": {"errorKey", "message"}}`
  *
  * @internal
  */
@@ -39,7 +40,11 @@ final readonly class ErrorDetails
             return new self(self::excerpt($body), null, null);
         }
 
-        $nested = \is_array($decoded['error'] ?? null) ? $decoded['error'] : [];
+        $nested = match (true) {
+            \is_array($decoded['error'] ?? null) => $decoded['error'],
+            \is_array($decoded['errorResponse'] ?? null) => $decoded['errorResponse'],
+            default => [],
+        };
 
         return new self(
             message: self::firstString($decoded, ['Message', 'message', 'detail', 'title'])

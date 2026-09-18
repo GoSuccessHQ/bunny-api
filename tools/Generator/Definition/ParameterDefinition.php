@@ -19,6 +19,8 @@ final readonly class ParameterDefinition
     public const string PAYLOAD = 'payload';
     /** A path parameter the client supplies, e.g. the Stream library ID. */
     public const string CLIENT = 'client';
+    /** A body property that repeats a path parameter and is filled from it. */
+    public const string BOUND = 'bound';
 
     /**
      * @param string      $specName Name in the specification (query key, path placeholder or body key).
