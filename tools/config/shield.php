@@ -183,10 +183,22 @@ return [
             'methods' => [
                 'list' => ['operation' => 'Get Access Lists'],
                 'get' => ['operation' => 'Get Custom Access List'],
-                'create' => ['operation' => 'Create Custom Access List', 'flatten' => true],
+                // Observed live by the gosuccess-control session: a new list starts
+                // disabled with the action Log. bunny.net's Terraform provider
+                // therefore configures every list right after creating it, looking
+                // up its configuration ID in the list of all access lists.
+                'create' => [
+                    'operation' => 'Create Custom Access List',
+                    'flatten' => true,
+                    'note' => 'A new list starts disabled, with the action Log. Enable it and choose its action with configure(), which takes the configurationId that list() reports for the list, not the ID returned here.',
+                ],
                 'update' => ['operation' => 'Update Custom Access List', 'flatten' => true],
                 'delete' => ['operation' => 'Delete Custom Access List'],
-                'configure' => ['operation' => 'Update Access List Configuration', 'flatten' => true],
+                'configure' => [
+                    'operation' => 'Update Access List Configuration',
+                    'flatten' => true,
+                    'note' => 'Takes the configuration ID that list() reports as configurationId for every managed and custom list; it differs from the list ID that create() and get() return.',
+                ],
                 // The zone ID is an integer everywhere else.
                 'enums' => ['operation' => 'Get Access List Enums', 'parameterTypes' => ['shieldZoneId' => 'int']],
             ],

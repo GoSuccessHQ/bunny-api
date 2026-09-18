@@ -50,6 +50,8 @@ final class AccessListResource extends AbstractResource
     /**
      * Create a new Custom Access List associated with a Shield Zone
      *
+     * A new list starts disabled, with the action Log. Enable it and choose its action with configure(), which takes the configurationId that list() reports for the list, not the ID returned here.
+     *
      * `POST /shield/shield-zone/{shieldZoneId}/access-lists`
      *
      * @param int            $shieldZoneId The ID of the Shield Zone to which the Custom Access List will be associated.
@@ -138,6 +140,8 @@ final class AccessListResource extends AbstractResource
 
     /**
      * Update Access List Configuration for a Shield Zone
+     *
+     * Takes the configuration ID that list() reports as configurationId for every managed and custom list; it differs from the list ID that create() and get() return.
      *
      * `PATCH /shield/shield-zone/{shieldZoneId}/access-lists/configurations/{id}`
      *

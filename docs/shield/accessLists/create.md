@@ -4,6 +4,8 @@
 
 Create a new Custom Access List associated with a Shield Zone
 
+A new list starts disabled, with the action Log. Enable it and choose its action with configure(), which takes the configurationId that list() reports for the list, not the ID returned here.
+
 ## Signature
 
 ```php

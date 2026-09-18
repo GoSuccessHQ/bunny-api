@@ -4,6 +4,8 @@
 
 Update Access List Configuration for a Shield Zone
 
+Takes the configuration ID that list() reports as configurationId for every managed and custom list; it differs from the list ID that create() and get() return.
+
 ## Signature
 
 ```php

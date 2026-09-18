@@ -452,6 +452,23 @@ $top = $shield->eventLogs->search(
 $shield->eventLogs->export($zone->shieldZoneId, new DateTimeImmutable('-1 day'), new DateTimeImmutable(), sink: Stream::fromFile('events.csv', 'wb'));
 ```
 
+A new custom access list starts disabled, with the action Log. `configure()`
+makes it effective; it takes the configuration ID that `list()` reports for the
+list, not the list ID:
+
+```php
+use GoSuccess\Bunny\Shield\Enum\AccessListAction;
+use GoSuccess\Bunny\Shield\Enum\AccessListType;
+
+$list = $shield->accessLists->create($zone->shieldZoneId, 'Office', AccessListType::CIDR, "203.0.113.0/24\n198.51.100.0/24");
+
+foreach ($shield->accessLists->list($zone->shieldZoneId)->customLists as $details) {
+    if ($details->listId === $list->id) {
+        $shield->accessLists->configure($zone->shieldZoneId, $details->configurationId, isEnabled: true, action: AccessListAction::Bypass);
+    }
+}
+```
+
 Custom block, challenge and rate limit pages are plain HTML:
 
 ```php
