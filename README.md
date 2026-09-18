@@ -641,7 +641,8 @@ composer specs      # refresh the snapshots from bunny.net, then run "composer g
 CI regenerates everything and fails if the committed files are out of date.
 
 The read-only integration tests check the client against a real account. They
-only send `GET` requests without side effects:
+only send requests without side effects: GETs and a few reads that use POST,
+such as availability checks and searches:
 
 ```bash
 BUNNY_API_KEY=your-api-key composer test:integration

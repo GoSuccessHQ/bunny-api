@@ -11,8 +11,8 @@ use GoSuccess\Bunny\Model\Cast;
  * Reads the answer of the three `checkavailability` endpoints.
  *
  * bunny.net documents them as returning "the model determining if the zone is
- * available or not" without describing it. The answer is read from its
- * `Available` field; any other shape fails loudly instead of being guessed.
+ * available or not" without describing it; it is `{"Available": true|false}`
+ * (verified live). Any other shape fails loudly instead of being guessed.
  *
  * @internal
  */

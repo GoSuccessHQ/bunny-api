@@ -23,8 +23,9 @@ use PHPUnit\Framework\Attributes\CoversNothing;
 /**
  * Read-only checks of the Core Platform API against a real account.
  *
- * Only side-effect-free GET requests are made. `pullZones->loadFreeCertificate()`
- * is deliberately absent: despite being a GET it issues a certificate.
+ * Only requests without side effects are made: GETs and the availability
+ * checks, which use POST. `pullZones->loadFreeCertificate()` is deliberately
+ * absent: despite being a GET it issues a certificate.
  */
 #[CoversNothing]
 final class CoreReadOnlyTest extends IntegrationTestCase
@@ -59,6 +60,8 @@ final class CoreReadOnlyTest extends IntegrationTestCase
         $zone = $client->pullZones->get($page->items[0]->id);
         self::assertSame($page->items[0]->id, $zone->id);
         self::assertNotNull($zone->name);
+        self::assertFalse($client->pullZones->checkAvailability($zone->name));
+        self::assertTrue($client->pullZones->checkAvailability(self::unusedName()));
 
         $client->pullZones->optimizerStatistics($zone->id);
         $client->pullZones->originShieldQueueStatistics($zone->id);
@@ -77,6 +80,9 @@ final class CoreReadOnlyTest extends IntegrationTestCase
 
         $zone = $client->storageZones->get($page->items[0]->id);
         self::assertSame($page->items[0]->name, $zone->name);
+        self::assertNotNull($zone->name);
+        self::assertFalse($client->storageZones->checkAvailability($zone->name));
+        self::assertTrue($client->storageZones->checkAvailability(self::unusedName()));
         $client->storageZones->statistics($zone->id);
         $client->storageZones->egressStatistics($zone->id);
     }
@@ -93,6 +99,9 @@ final class CoreReadOnlyTest extends IntegrationTestCase
 
         $zone = $client->dnsZones->get($page->items[0]->id);
         self::assertSame($page->items[0]->domain, $zone->domain);
+        self::assertNotNull($zone->domain);
+        self::assertFalse($client->dnsZones->checkAvailability($zone->domain));
+        self::assertTrue($client->dnsZones->checkAvailability(self::unusedName() . '.com'));
 
         $records = $client->dnsRecords->list($zone->id, perPage: 50);
         self::assertContainsOnlyInstancesOf(DnsRecord::class, $records->items);
@@ -145,6 +154,16 @@ final class CoreReadOnlyTest extends IntegrationTestCase
         }
 
         self::assertStringStartsWith('%PDF', self::client()->billing->summaryPdf($records[0]->id));
+    }
+
+    /**
+     * A zone name nobody uses.
+     */
+    private static function unusedName(): string
+    {
+        $suffix = bin2hex(random_bytes(6));
+
+        return "gosuccess-check-{$suffix}";
     }
 
     private static function client(): CoreClient
