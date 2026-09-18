@@ -23,7 +23,7 @@ trait VideoOperations
      * The file is sent as the raw request body and streamed, so it does not
      * have to fit into memory. The HTTP API cannot resume an interrupted upload;
      * for files over 2 GB or unstable connections, bunny.net recommends TUS
-     * resumable uploads (see {@see \GoSuccess\Bunny\Stream\Upload\TusUpload}).
+     * resumable uploads (see {@see \GoSuccess\Bunny\Stream\Upload\TusUploader}).
      *
      * `PUT /library/{libraryId}/videos/{videoId}`
      *

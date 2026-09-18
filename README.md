@@ -318,6 +318,47 @@ $upload->headers;    // AuthorizationSignature, AuthorizationExpire, LibraryId, 
 TUS clients that expect the raw `Upload-Metadata` header get it from
 `TusUpload::metadata('video/mp4', 'Product tour')`.
 
+### Resumable uploads from PHP
+
+Large files and unstable connections are better served by TUS on the server,
+too. The uploader sends the file in chunks (16 MiB by default), each with a
+SHA-1 checksum; after a network failure or a server error it asks bunny.net how
+much arrived and continues from there:
+
+```php
+use GoSuccess\Bunny\Http\Stream;
+
+$video = $stream->videos->create('Product tour');
+$uploader = $bunny->streamUploader(12345, 'library-api-key');
+
+$uploader->upload(
+    $video->guid,
+    Stream::fromFile('tour.mp4'),
+    fileType: 'video/mp4',
+    title: 'Product tour',
+    onProgress: static function (int $sent, int $total): void {
+        echo round($sent / $total * 100), '%', PHP_EOL;
+    },
+);
+```
+
+To survive the end of the process as well, store the session before uploading
+and resume it later, from wherever the server stands:
+
+```php
+use GoSuccess\Bunny\Stream\Upload\TusSession;
+
+$session = $uploader->create($video->guid, filesize('tour.mp4'), 'video/mp4', 'Product tour');
+file_put_contents('upload.json', json_encode($session->toArray()));
+
+// Later, in any process:
+$session = TusSession::fromArray(json_decode(file_get_contents('upload.json'), true));
+$uploader->resume($session, Stream::fromFile('tour.mp4'));
+```
+
+An unfinished upload stays resumable until its signature expires (after one day
+by default, see `expires`) or after about 48 hours without activity.
+
 ### Embed token authentication
 
 When a library requires signed embed URLs, sign them with the library's token

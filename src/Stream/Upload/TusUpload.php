@@ -15,6 +15,7 @@ use SensitiveParameter;
  * Create the video on your server, presign the upload there, and hand the
  * endpoint and headers to a TUS client (e.g. tus-js-client in the browser),
  * which then uploads directly to bunny.net without ever seeing the API key.
+ * To upload from PHP, use {@see TusUploader}.
  *
  * ```php
  * $video = $stream->videos->create('My video');

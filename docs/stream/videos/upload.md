@@ -4,7 +4,7 @@
 
 Upload the file of a video created with create().
 
-The file is sent as the raw request body and streamed, so it does not have to fit into memory. The HTTP API cannot resume an interrupted upload; for files over 2 GB or unstable connections, bunny.net recommends TUS resumable uploads (see `TusUpload`).
+The file is sent as the raw request body and streamed, so it does not have to fit into memory. The HTTP API cannot resume an interrupted upload; for files over 2 GB or unstable connections, bunny.net recommends TUS resumable uploads (see `TusUploader`).
 
 ## Signature
 

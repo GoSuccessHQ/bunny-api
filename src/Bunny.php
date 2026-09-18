@@ -19,6 +19,7 @@ use GoSuccess\Bunny\Shield\ShieldClient;
 use GoSuccess\Bunny\Storage\StorageClient;
 use GoSuccess\Bunny\Storage\StorageRegion;
 use GoSuccess\Bunny\Stream\StreamClient;
+use GoSuccess\Bunny\Stream\Upload\TusUploader;
 use InvalidArgumentException;
 use SensitiveParameter;
 
@@ -176,6 +177,31 @@ final class Bunny
         }
 
         return $this->stream($library->id, $apiKey);
+    }
+
+    /**
+     * A resumable uploader for the videos of one library, over the TUS
+     * protocol; the way to upload large files and over unstable connections.
+     */
+    public function streamUploader(
+        int $libraryId,
+        #[SensitiveParameter]
+        string $apiKey,
+    ): TusUploader {
+        return new TusUploader($libraryId, $apiKey, $this->options, $this->httpClient, $this->rateLimiter);
+    }
+
+    /**
+     * A resumable uploader for a video library as the Core API returns it, e.g.
+     * from `$bunny->core->videoLibraries->get($id)`, which includes its API key.
+     */
+    public function streamUploaderFor(VideoLibrary $library): TusUploader
+    {
+        if ($library->apiKey === null || $library->apiKey === '') {
+            throw new InvalidArgumentException('The video library has no API key; fetch it with $bunny->core->videoLibraries->get().');
+        }
+
+        return $this->streamUploader($library->id, $library->apiKey);
     }
 
     /**
