@@ -9,6 +9,7 @@ use GoSuccess\Bunny\Core\CoreClient;
 use GoSuccess\Bunny\EdgeScripting\EdgeScriptingClient;
 use GoSuccess\Bunny\Http\Response;
 use GoSuccess\Bunny\Logging\LoggingClient;
+use GoSuccess\Bunny\MagicContainers\MagicContainersClient;
 use GoSuccess\Bunny\OriginErrors\OriginErrorsClient;
 use GoSuccess\Bunny\Shield\ShieldClient;
 use GoSuccess\Bunny\Tests\Support\MockHttpClient;
@@ -31,6 +32,7 @@ final class BunnyTest extends TestCase
         self::assertInstanceOf(LoggingClient::class, $bunny->logging);
         self::assertInstanceOf(ShieldClient::class, $bunny->shield);
         self::assertInstanceOf(EdgeScriptingClient::class, $bunny->edgeScripting);
+        self::assertInstanceOf(MagicContainersClient::class, $bunny->magicContainers);
     }
 
     public function testHidesTheApiKeyFromDumps(): void

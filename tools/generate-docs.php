@@ -43,6 +43,7 @@ $apis = [
     'stream',
     'shield',
     'edge-scripting',
+    'magic-containers',
 ];
 
 /**
@@ -54,6 +55,7 @@ $apis = [
 $entryPoints = [
     'stream' => ['accessor' => '$stream', 'setup' => SETUP . "\n\$stream = \$bunny->stream(12345, 'library-api-key');"],
     'edge-scripting' => ['accessor' => '$bunny->edgeScripting', 'setup' => SETUP],
+    'magic-containers' => ['accessor' => '$bunny->magicContainers', 'setup' => SETUP],
 ];
 
 $sections = [];

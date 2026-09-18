@@ -471,3 +471,112 @@ Secrets of edge scripts; their values can be written, never read.
 - [`update()`](edge-scripting/secrets/update.md) — Update Secret
 - [`upsert()`](edge-scripting/secrets/upsert.md) — Upsert Secret
 - [`delete()`](edge-scripting/secrets/delete.md) — Delete Secret
+
+## Magic Containers API
+
+Client `MagicContainersClient` in `GoSuccess\Bunny\MagicContainers`, reached via `$bunny->magicContainers`.
+
+### `apps`
+
+Applications: their deployment, settings, statistics and costs.
+
+- [`list()`](magic-containers/apps/list.md) — List Applications
+- [`all()`](magic-containers/apps/all.md) — Iterate lazily over every item of list(), across all pages
+- [`get()`](magic-containers/apps/get.md) — Get application
+- [`create()`](magic-containers/apps/create.md) — Add Application
+- [`update()`](magic-containers/apps/update.md) — Update Application
+- [`patch()`](magic-containers/apps/patch.md) — Patch Application
+- [`delete()`](magic-containers/apps/delete.md) — Delete Application
+- [`deploy()`](magic-containers/apps/deploy.md) — Deploy Application
+- [`undeploy()`](magic-containers/apps/undeploy.md) — Undeploy Application
+- [`restart()`](magic-containers/apps/restart.md) — Restart Application
+- [`statistics()`](magic-containers/apps/statistics.md) — Get Application Statistics
+- [`summary()`](magic-containers/apps/summary.md) — Get Application Usage Summary
+- [`overview()`](magic-containers/apps/overview.md) — Get Application Overview
+- [`autoscaling()`](magic-containers/apps/autoscaling.md) — Get Application Autoscaling
+- [`setAutoscaling()`](magic-containers/apps/setAutoscaling.md) — Update Application Autoscaling
+- [`regionSettings()`](magic-containers/apps/regionSettings.md) — Get Application Region Settings
+- [`setRegionSettings()`](magic-containers/apps/setRegionSettings.md) — Update Application Region Settings
+
+### `containers`
+
+The container templates of applications.
+
+- [`get()`](magic-containers/containers/get.md) — Get Container Template
+- [`create()`](magic-containers/containers/create.md) — Add Container Template
+- [`patch()`](magic-containers/containers/patch.md) — Patch Container Template
+- [`delete()`](magic-containers/containers/delete.md) — Delete Container Template
+- [`setEnvironmentVariables()`](magic-containers/containers/setEnvironmentVariables.md) — Set Container Environment Variables
+
+### `endpoints`
+
+The endpoints that expose containers through the CDN or anycast IPs.
+
+- [`list()`](magic-containers/endpoints/list.md) — List application endpoints
+- [`create()`](magic-containers/endpoints/create.md) — Add application endpoint
+- [`update()`](magic-containers/endpoints/update.md) — Update Application Endpoint
+- [`delete()`](magic-containers/endpoints/delete.md) — Delete application endpoint
+
+### `volumes`
+
+The persistent volumes of applications.
+
+- [`list()`](magic-containers/volumes/list.md) — List Volumes
+- [`update()`](magic-containers/volumes/update.md) — Update Volume
+- [`detach()`](magic-containers/volumes/detach.md) — Detach Volume
+- [`delete()`](magic-containers/volumes/delete.md) — Delete All Volume Instances
+- [`deleteInstance()`](magic-containers/volumes/deleteInstance.md) — Delete Volume Instance
+
+### `pods`
+
+The running instances of applications.
+
+- [`recreate()`](magic-containers/pods/recreate.md) — Recreate Pod
+
+### `registries`
+
+Container registries and the images they hold.
+
+- [`list()`](magic-containers/registries/list.md) — List Container Registries
+- [`get()`](magic-containers/registries/get.md) — Get Container Registry
+- [`create()`](magic-containers/registries/create.md) — Add container registry
+- [`update()`](magic-containers/registries/update.md) — Update Container Registry
+- [`delete()`](magic-containers/registries/delete.md) — Delete Container Registry
+- [`images()`](magic-containers/registries/images.md) — List Container Images
+- [`searchPublicImages()`](magic-containers/registries/searchPublicImages.md) — Search Public Container Images
+- [`tags()`](magic-containers/registries/tags.md) — List Container Image Tags
+- [`imageConfig()`](magic-containers/registries/imageConfig.md) — Get Image Config
+- [`digest()`](magic-containers/registries/digest.md) — Get Container Image Digest
+- [`configSuggestions()`](magic-containers/registries/configSuggestions.md) — Get Container Config Suggestions
+
+### `regions`
+
+The regions applications can run in.
+
+- [`list()`](magic-containers/regions/list.md) — List Regions
+- [`all()`](magic-containers/regions/all.md) — Iterate lazily over every item of list(), across all pages
+- [`optimal()`](magic-containers/regions/optimal.md) — Get Optimal Base Region
+
+### `nodes`
+
+The IP addresses of the Magic Containers nodes, e.g. for allowlists.
+
+- [`list()`](magic-containers/nodes/list.md) — List Nodes
+- [`all()`](magic-containers/nodes/all.md) — Iterate lazily over every item of list(), across all pages
+- [`plain()`](magic-containers/nodes/plain.md) — List Node IPs (Plain)
+
+### `limits`
+
+The limits of the account.
+
+- [`get()`](magic-containers/limits/get.md) — Get User Limits
+
+### `logForwarding`
+
+Forwarding of application logs to syslog endpoints.
+
+- [`list()`](magic-containers/logForwarding/list.md) — List log-forwarding configurations
+- [`get()`](magic-containers/logForwarding/get.md) — Get log-forwarding configuration
+- [`create()`](magic-containers/logForwarding/create.md) — Create log forwarding configuration
+- [`update()`](magic-containers/logForwarding/update.md) — Update log-forwarding configuration
+- [`delete()`](magic-containers/logForwarding/delete.md) — Delete log-forwarding configuration

@@ -11,6 +11,7 @@ use GoSuccess\Bunny\EdgeScripting\EdgeScriptingClient;
 use GoSuccess\Bunny\Http\CurlHttpClient;
 use GoSuccess\Bunny\Http\HttpClient;
 use GoSuccess\Bunny\Logging\LoggingClient;
+use GoSuccess\Bunny\MagicContainers\MagicContainersClient;
 use GoSuccess\Bunny\OriginErrors\OriginErrorsClient;
 use GoSuccess\Bunny\RateLimit\NullRateLimiter;
 use GoSuccess\Bunny\RateLimit\RateLimiter;
@@ -67,6 +68,14 @@ final class Bunny
      */
     public private(set) EdgeScriptingClient $edgeScripting {
         get => $this->edgeScripting ??= new EdgeScriptingClient($this->apiKey, $this->options, $this->httpClient, $this->rateLimiter);
+    }
+
+    /**
+     * The Magic Containers API: containerized applications on bunny.net's
+     * edge, with their containers, endpoints, volumes and registries.
+     */
+    public private(set) MagicContainersClient $magicContainers {
+        get => $this->magicContainers ??= new MagicContainersClient($this->apiKey, $this->options, $this->httpClient, $this->rateLimiter);
     }
 
     /**

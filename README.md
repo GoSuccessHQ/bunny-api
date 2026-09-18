@@ -31,7 +31,7 @@ A modern, strongly-typed, **dependency-free** PHP client for the
 | [Stream API](https://bunny.net/docs/api-reference/stream) | `GoSuccess\Bunny\Stream` | `$bunny->stream(...)` | ✅ |
 | [Shield API](https://bunny.net/docs/api-reference/shield) | `GoSuccess\Bunny\Shield` | `$bunny->shield` | ✅ |
 | [Edge Scripting API](https://bunny.net/docs/api-reference/scripting) | `GoSuccess\Bunny\EdgeScripting` | `$bunny->edgeScripting` | ✅ |
-| Magic Containers API | `GoSuccess\Bunny\MagicContainers` | | planned |
+| [Magic Containers API](https://bunny.net/docs/api-reference/magic-containers) | `GoSuccess\Bunny\MagicContainers` | `$bunny->magicContainers` | ✅ |
 
 ## Requirements
 
@@ -447,6 +447,34 @@ foreach ($scripting->scripts->all() as $script) {
 
 Secret values can be written but never read back; `secrets->list()` returns
 their names only.
+
+## Magic Containers API
+
+Magic Containers runs containerized applications on bunny.net's edge:
+
+```php
+use GoSuccess\Bunny\MagicContainers\Enum\DataGranularity;
+
+$containers = $bunny->magicContainers;
+
+foreach ($containers->apps->all() as $app) {
+    echo $app->name, ': ', $app->status?->value, PHP_EOL;
+}
+
+$app = $containers->apps->get($appId);
+$containers->containers->setEnvironmentVariables($appId, $app->containerTemplates[0]->id, ['APP_ENV' => 'production']);
+$containers->apps->restart($appId);
+
+$statistics = $containers->apps->statistics($appId, fromDate: new DateTimeImmutable('-1 day'), granularity: DataGranularity::Hourly);
+$costs = $containers->apps->summary($appId);
+
+// The IP addresses of all nodes, e.g. for an origin firewall.
+$ips = $containers->nodes->plain();
+```
+
+Applications are created and changed with request models such as
+`AddApplicationRequest` and `PatchApplicationRequest`; lists are paged by cursor,
+and `all()` follows the cursors for you.
 
 ## Partial updates and clearing fields
 

@@ -20,4 +20,5 @@ BUNNY_API_KEY=your-api-key php examples/core-pull-zones.php
 | [stream.php](stream.php) | Videos, collections and views of a video library with its read-only key |
 | [shield.php](shield.php) | Shield zones with plan, WAF mode, rate limits and yesterday's event logs |
 | [edge-scripting.php](edge-scripting.php) | Edge scripts with type, hostname, linked pull zones and active release |
+| [magic-containers.php](magic-containers.php) | Applications, limits, regions and node IP addresses of Magic Containers |
 | [error-handling.php](error-handling.php) | Typed exceptions and the details they carry |
