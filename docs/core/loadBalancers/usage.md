@@ -1,4 +1,4 @@
-# `loadBalancers->usage()`
+# `$bunny->core->loadBalancers->usage()`
 
 > Core Platform API · `GET /loadbalancer/{loadBalancerId}/usage`
 

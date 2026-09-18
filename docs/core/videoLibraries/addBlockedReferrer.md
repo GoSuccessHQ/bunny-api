@@ -1,4 +1,4 @@
-# `videoLibraries->addBlockedReferrer()`
+# `$bunny->core->videoLibraries->addBlockedReferrer()`
 
 > Core Platform API · `POST /videolibrary/{id}/addBlockedReferrer`
 

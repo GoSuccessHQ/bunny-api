@@ -1,4 +1,4 @@
-# `billing->affiliate()`
+# `$bunny->core->billing->affiliate()`
 
 > Core Platform API · `GET /billing/affiliate`
 

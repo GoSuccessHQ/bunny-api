@@ -1,4 +1,4 @@
-# `loadBalancers->attachedPullZones()`
+# `$bunny->core->loadBalancers->attachedPullZones()`
 
 > Core Platform API · `GET /loadbalancer/{loadBalancerId}/pullzones`
 

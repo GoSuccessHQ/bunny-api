@@ -1,4 +1,4 @@
-# `videoLibraries->addLiveWatermark()`
+# `$bunny->core->videoLibraries->addLiveWatermark()`
 
 > Core Platform API · `PUT /videolibrary/{id}/live/watermark`
 

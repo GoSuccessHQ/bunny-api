@@ -1,4 +1,4 @@
-# `pullZones->all()`
+# `$bunny->core->pullZones->all()`
 
 > Core Platform API · `GET /pullzone`
 

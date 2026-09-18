@@ -1,4 +1,4 @@
-# `pullZones->addBlockedReferrer()`
+# `$bunny->core->pullZones->addBlockedReferrer()`
 
 > Core Platform API · `POST /pullzone/{id}/addBlockedReferrer`
 

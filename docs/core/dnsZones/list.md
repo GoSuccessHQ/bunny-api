@@ -1,4 +1,4 @@
-# `dnsZones->list()`
+# `$bunny->core->dnsZones->list()`
 
 > Core Platform API · `GET /dnszone`
 

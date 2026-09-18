@@ -1,4 +1,4 @@
-# `videoLibraries->removeAllowedReferrer()`
+# `$bunny->core->videoLibraries->removeAllowedReferrer()`
 
 > Core Platform API · `POST /videolibrary/{id}/removeAllowedReferrer`
 

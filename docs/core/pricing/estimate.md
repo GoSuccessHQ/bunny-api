@@ -1,4 +1,4 @@
-# `pricing->estimate()`
+# `$bunny->core->pricing->estimate()`
 
 > Core Platform API · `GET /v1/pricing/{source}/{resourceId}`
 

@@ -7,6 +7,7 @@ namespace GoSuccess\Bunny;
 use GoSuccess\Bunny\Core\CoreClient;
 use GoSuccess\Bunny\Http\CurlHttpClient;
 use GoSuccess\Bunny\Http\HttpClient;
+use GoSuccess\Bunny\OriginErrors\OriginErrorsClient;
 use GoSuccess\Bunny\RateLimit\NullRateLimiter;
 use GoSuccess\Bunny\RateLimit\RateLimiter;
 use SensitiveParameter;
@@ -34,6 +35,14 @@ final class Bunny
      */
     public private(set) CoreClient $core {
         get => $this->core ??= new CoreClient($this->apiKey, $this->options, $this->httpClient, $this->rateLimiter);
+    }
+
+    /**
+     * The Origin Errors API: requests the CDN could not complete because the
+     * origin failed.
+     */
+    public private(set) OriginErrorsClient $originErrors {
+        get => $this->originErrors ??= new OriginErrorsClient($this->apiKey, $this->options, $this->httpClient, $this->rateLimiter);
     }
 
     private readonly HttpClient $httpClient;

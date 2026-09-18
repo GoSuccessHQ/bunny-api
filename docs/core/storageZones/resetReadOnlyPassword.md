@@ -1,4 +1,4 @@
-# `storageZones->resetReadOnlyPassword()`
+# `$bunny->core->storageZones->resetReadOnlyPassword()`
 
 > Core Platform API · `POST /storagezone/resetReadOnlyPassword`
 

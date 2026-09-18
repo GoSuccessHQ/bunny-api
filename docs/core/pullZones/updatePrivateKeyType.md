@@ -1,4 +1,4 @@
-# `pullZones->updatePrivateKeyType()`
+# `$bunny->core->pullZones->updatePrivateKeyType()`
 
 > Core Platform API · `POST /pullzone/{id}/updatePrivateKeyType`
 

@@ -1,4 +1,4 @@
-# `countries->list()`
+# `$bunny->core->countries->list()`
 
 > Core Platform API · `GET /country`
 

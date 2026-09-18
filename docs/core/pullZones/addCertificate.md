@@ -1,4 +1,4 @@
-# `pullZones->addCertificate()`
+# `$bunny->core->pullZones->addCertificate()`
 
 > Core Platform API · `POST /pullzone/{id}/addCertificate`
 

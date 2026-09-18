@@ -1,4 +1,4 @@
-# `edgeRules->setEnabled()`
+# `$bunny->core->edgeRules->setEnabled()`
 
 > Core Platform API · `POST /pullzone/{pullZoneId}/edgerules/{edgeRuleId}/setEdgeRuleEnabled`
 

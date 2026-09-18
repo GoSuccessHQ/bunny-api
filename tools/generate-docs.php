@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Generate the reference pages under docs/ from the resource classes.
+ * Generate the reference pages under docs/ from the client and resource classes.
  *
  * Usage:
  *   php tools/generate-docs.php
@@ -12,25 +12,63 @@ declare(strict_types=1);
  * deleted; docs/ contains generated pages only.
  */
 
+use GoSuccess\Bunny\Bunny;
+use GoSuccess\Bunny\OriginErrors\OriginErrorsClient;
+use GoSuccess\Bunny\Tools\Generator\Docs\DocSection;
 use GoSuccess\Bunny\Tools\Generator\Docs\DocsGenerator;
+use GoSuccess\Bunny\Tools\Generator\Docs\DocTarget;
 use GoSuccess\Bunny\Tools\Generator\Generator;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-/** How each API client is reached from the Bunny entry point. */
-const ACCESSORS = [
-    'core' => '$bunny->core',
+const SETUP = "\$bunny = new Bunny('your-api-key');";
+
+/**
+ * The APIs in documentation order. Generated APIs are described by their
+ * generator configuration; hand-written ones list their classes here.
+ *
+ * @var list<string|DocSection> $apis
+ */
+$apis = [
+    'core',
+    new DocSection('origin-errors', 'Origin Errors API', OriginErrorsClient::class, '$bunny->originErrors', [Bunny::class], SETUP, [
+        new DocTarget(null, OriginErrorsClient::class, 'Requests the CDN could not complete because the origin failed.'),
+    ]),
 ];
 
-$apis = [];
+$sections = [];
 
-foreach (glob(__DIR__ . '/config/*.php') ?: [] as $file) {
-    $analysis = new Generator($file)->analyze();
-    $apis[$analysis->config->name] = $analysis;
+foreach ($apis as $api) {
+    if ($api instanceof DocSection) {
+        $sections[] = $api;
+
+        continue;
+    }
+
+    $analysis = new Generator(__DIR__ . "/config/{$api}.php")->analyze();
+    $config = $analysis->config;
+    $targets = [];
+
+    foreach ($analysis->resources as $resource) {
+        $methods = [];
+
+        foreach ($resource->config->methods as $name => $method) {
+            $methods[] = $name;
+
+            if ($method->all !== null) {
+                $methods[] = $method->all;
+            }
+        }
+
+        $targets[] = new DocTarget($resource->config->property, $resource->class, $resource->config->description, $methods);
+    }
+
+    $client = "GoSuccess\\Bunny\\{$config->namespace}\\{$config->client}";
+    $sections[] = new DocSection($config->name, $config->title, $client, "\$bunny->{$config->name}", [Bunny::class], SETUP, $targets);
 }
 
 $docs = dirname(__DIR__) . '/docs';
-$files = new DocsGenerator($apis, ACCESSORS)->render();
+$files = new DocsGenerator($sections)->render();
 $written = 0;
 
 foreach ($files as $path => $content) {

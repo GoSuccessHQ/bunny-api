@@ -1,4 +1,4 @@
-# `billing->paymentRequests()`
+# `$bunny->core->billing->paymentRequests()`
 
 > Core Platform API · `GET /billing/payment-requests`
 

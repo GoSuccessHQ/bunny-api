@@ -1,4 +1,4 @@
-# `videoLibraries->list()`
+# `$bunny->core->videoLibraries->list()`
 
 > Core Platform API · `GET /videolibrary`
 

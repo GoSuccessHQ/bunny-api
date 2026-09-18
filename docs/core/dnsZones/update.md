@@ -1,4 +1,4 @@
-# `dnsZones->update()`
+# `$bunny->core->dnsZones->update()`
 
 > Core Platform API · `POST /dnszone/{id}`
 

@@ -1,4 +1,4 @@
-# `pullZones->removeBlockedIp()`
+# `$bunny->core->pullZones->removeBlockedIp()`
 
 > Core Platform API · `POST /pullzone/{id}/removeBlockedIp`
 

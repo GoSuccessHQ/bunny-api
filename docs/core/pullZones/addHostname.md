@@ -1,4 +1,4 @@
-# `pullZones->addHostname()`
+# `$bunny->core->pullZones->addHostname()`
 
 > Core Platform API · `POST /pullzone/{id}/addHostname`
 

@@ -1,4 +1,4 @@
-# `pullZones->create()`
+# `$bunny->core->pullZones->create()`
 
 > Core Platform API · `POST /pullzone`
 

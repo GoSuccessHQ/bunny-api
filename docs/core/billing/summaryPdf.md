@@ -1,4 +1,4 @@
-# `billing->summaryPdf()`
+# `$bunny->core->billing->summaryPdf()`
 
 > Core Platform API · `GET /billing/summary/{billingRecordId}/pdf`
 

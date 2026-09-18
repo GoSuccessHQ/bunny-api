@@ -1,4 +1,4 @@
-# `account->close()`
+# `$bunny->core->account->close()`
 
 > Core Platform API · `POST /user/closeaccount`
 

@@ -1,4 +1,4 @@
-# `dnsZones->issueWildcardCertificate()`
+# `$bunny->core->dnsZones->issueWildcardCertificate()`
 
 > Core Platform API · `POST /dnszone/{zoneId}/certificate/issue`
 

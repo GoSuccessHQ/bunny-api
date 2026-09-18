@@ -1,4 +1,4 @@
-# `pullZones->update()`
+# `$bunny->core->pullZones->update()`
 
 > Core Platform API · `POST /pullzone/{id}`
 

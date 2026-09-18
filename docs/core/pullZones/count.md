@@ -1,4 +1,4 @@
-# `pullZones->count()`
+# `$bunny->core->pullZones->count()`
 
 > Core Platform API · `GET /pullzone/count`
 

@@ -1,4 +1,4 @@
-# `pullZones->addAllowedReferrer()`
+# `$bunny->core->pullZones->addAllowedReferrer()`
 
 > Core Platform API · `POST /pullzone/{id}/addAllowedReferrer`
 

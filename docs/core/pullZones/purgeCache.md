@@ -1,4 +1,4 @@
-# `pullZones->purgeCache()`
+# `$bunny->core->pullZones->purgeCache()`
 
 > Core Platform API · `POST /pullzone/{id}/purgeCache`
 

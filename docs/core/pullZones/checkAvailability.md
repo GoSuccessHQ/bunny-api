@@ -1,4 +1,4 @@
-# `pullZones->checkAvailability()`
+# `$bunny->core->pullZones->checkAvailability()`
 
 > Core Platform API · `POST /pullzone/checkavailability`
 

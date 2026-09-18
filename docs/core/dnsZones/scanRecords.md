@@ -1,4 +1,4 @@
-# `dnsZones->scanRecords()`
+# `$bunny->core->dnsZones->scanRecords()`
 
 > Core Platform API · `POST /dnszone/records/scan`
 

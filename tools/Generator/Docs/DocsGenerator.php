@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace GoSuccess\Bunny\Tools\Generator\Docs;
 
 use BackedEnum;
-use GoSuccess\Bunny\Tools\Generator\Analysis;
-use LogicException;
 use ReflectionClass;
 use ReflectionEnum;
 use ReflectionMethod;
@@ -27,13 +25,9 @@ use UnitEnum;
 final class DocsGenerator
 {
     /**
-     * @param array<string, Analysis> $apis     Keyed by API name.
-     * @param array<string, string>   $accessors API name => PHP expression reaching its client, e.g. '$bunny->core'.
+     * @param list<DocSection> $sections
      */
-    public function __construct(
-        private readonly array $apis,
-        private readonly array $accessors,
-    ) {}
+    public function __construct(private readonly array $sections) {}
 
     /**
      * @return array<string, string> Relative path under docs/ => content.
@@ -41,26 +35,29 @@ final class DocsGenerator
     public function render(): array
     {
         $files = [];
-        $index = "# API Reference\n\nOne page per resource method. See the [README](../README.md) for an introduction and [examples/](../examples/) for runnable scripts.\n";
+        $index = "# API Reference\n\nOne page per method. See the [README](../README.md) for an introduction and [examples/](../examples/) for runnable scripts.\n";
 
-        foreach ($this->apis as $name => $analysis) {
-            $accessor = $this->accessors[$name] ?? throw new LogicException("No accessor for {$name}.");
-            $index .= "\n## {$analysis->config->title}\n\nNamespace `GoSuccess\\Bunny\\{$analysis->config->namespace}`, client `{$analysis->config->client}`, reached via `{$accessor}`.\n";
+        foreach ($this->sections as $section) {
+            $client = $this->short($section->client);
+            $namespace = substr($section->client, 0, (int) strrpos($section->client, '\\'));
+            $index .= "\n## {$section->title}\n\nClient `{$client}` in `{$namespace}`, reached via `{$section->accessor}`.\n";
 
-            foreach ($analysis->resources as $resource) {
-                $property = $resource->config->property;
-
-                if (!class_exists($resource->class)) {
-                    throw new RuntimeException("{$resource->class} does not exist; run tools/generate.php first.");
+            foreach ($section->targets as $target) {
+                if (!class_exists($target->class)) {
+                    throw new RuntimeException("{$target->class} does not exist; run tools/generate.php first.");
                 }
 
-                $class = new ReflectionClass($resource->class);
-                $index .= "\n### `{$property}`\n\n{$resource->config->description}\n\n";
+                $class = new ReflectionClass($target->class);
+                $chain = $target->property === null ? $section->accessor : "{$section->accessor}->{$target->property}";
+                $index .= $target->property === null
+                    ? "\n{$target->description}\n\n"
+                    : "\n### `{$target->property}`\n\n{$target->description}\n\n";
 
-                foreach ($this->methods($class, array_keys($resource->config->methods), $resource->config->methods) as $method) {
+                foreach ($this->methods($class, $target->methods) as $method) {
                     $doc = DocBlock::parse((string) $method->getDocComment());
-                    $path = "{$name}/{$property}/{$method->getName()}.md";
-                    $files[$path] = $this->page($analysis, $accessor, $property, $method, $doc);
+                    $directory = $target->property ?? 'client';
+                    $path = "{$section->name}/{$directory}/{$method->getName()}.md";
+                    $files[$path] = $this->page($section, $chain, $method, $doc);
                     $summary = $doc->summary === '' ? '' : ' — ' . rtrim($doc->summary, '.');
                     $index .= "- [`{$method->getName()}()`]({$path}){$summary}\n";
                 }
@@ -73,43 +70,46 @@ final class DocsGenerator
     }
 
     /**
-     * Public methods in configuration order, each list method followed by its paginator.
+     * The documented methods, either in the given order or in declaration order.
      *
-     * @param ReflectionClass<object>                                                    $class
-     * @param list<string>                                                               $names
-     * @param array<string, \GoSuccess\Bunny\Tools\Generator\Config\MethodConfig> $configs
+     * @param ReflectionClass<object> $class
+     * @param list<string>|null       $names
      *
      * @return list<ReflectionMethod>
      */
-    private function methods(ReflectionClass $class, array $names, array $configs): array
+    private function methods(ReflectionClass $class, ?array $names): array
     {
-        $methods = [];
+        $public = [];
 
-        foreach ($names as $name) {
-            $methods[] = $class->getMethod($name);
-            $all = $configs[$name]->all;
-
-            if ($all !== null) {
-                $methods[] = $class->getMethod($all);
+        foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            if ($method->getDeclaringClass()->getName() === $class->getName() && !str_starts_with($method->getName(), '__')) {
+                $public[$method->getName()] = $method;
             }
         }
 
-        $documented = array_map(static fn(ReflectionMethod $method): string => $method->getName(), $methods);
+        if ($names === null) {
+            return array_values($public);
+        }
 
-        foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-            if ($method->getDeclaringClass()->getName() === $class->getName() && !$method->isConstructor() && !\in_array($method->getName(), $documented, true)) {
-                throw new RuntimeException("{$class->getName()}::{$method->getName()}() is not listed in the configuration.");
-            }
+        $methods = [];
+
+        foreach ($names as $name) {
+            $methods[] = $public[$name] ?? throw new RuntimeException("{$class->getName()}::{$name}() does not exist.");
+            unset($public[$name]);
+        }
+
+        if ($public !== []) {
+            throw new RuntimeException("{$class->getName()} has undocumented methods: " . implode(', ', array_keys($public)) . '.');
         }
 
         return $methods;
     }
 
-    private function page(Analysis $analysis, string $accessor, string $property, ReflectionMethod $method, DocBlock $doc): string
+    private function page(DocSection $section, string $chain, ReflectionMethod $method, DocBlock $doc): string
     {
         $name = $method->getName();
-        $out = "# `{$property}->{$name}()`\n\n";
-        $out .= "> {$analysis->config->title}" . ($doc->endpoint !== null ? " · `{$doc->endpoint}`" : '') . "\n\n";
+        $out = "# `{$chain}->{$name}()`\n\n";
+        $out .= "> {$section->title}" . ($doc->endpoint !== null ? " · `{$doc->endpoint}`" : '') . "\n\n";
 
         if ($doc->deprecated) {
             $out .= "> **Deprecated** by bunny.net.\n\n";
@@ -140,7 +140,7 @@ final class DocsGenerator
 
         $returns = $doc->return ?? $this->typeName($method->getReturnType());
         $out .= "## Returns\n\n`{$returns}`\n\n";
-        $out .= "## Example\n\n```php\n{$this->example($analysis, $accessor, $property, $method)}```\n";
+        $out .= "## Example\n\n```php\n{$this->example($section, $chain, $method)}```\n";
 
         return $out;
     }
@@ -209,9 +209,9 @@ final class DocsGenerator
         return $type->allowsNull() && $name !== 'mixed' && $name !== 'null' ? "?{$name}" : $name;
     }
 
-    private function example(Analysis $analysis, string $accessor, string $property, ReflectionMethod $method): string
+    private function example(DocSection $section, string $chain, ReflectionMethod $method): string
     {
-        $uses = [];
+        $uses = $section->uses;
         $arguments = [];
 
         foreach ($method->getParameters() as $parameter) {
@@ -227,7 +227,7 @@ final class DocsGenerator
             }
         }
 
-        $call = "{$accessor}->{$property}->{$method->getName()}(" . implode(', ', $arguments) . ')';
+        $call = "{$chain}->{$method->getName()}(" . implode(', ', $arguments) . ')';
         $returns = $this->typeName($method->getReturnType());
         $statement = match (true) {
             $returns === 'void' => "{$call};\n",
@@ -235,11 +235,12 @@ final class DocsGenerator
             default => "\$result = {$call};\n",
         };
 
-        $uses = array_unique(['GoSuccess\\Bunny\\Bunny', ...$uses]);
+        // Global classes need no import; "use DateTimeImmutable;" would even warn.
+        $uses = array_unique(array_filter($uses, static fn(string $class): bool => str_contains($class, '\\')));
         sort($uses);
         $useBlock = implode('', array_map(static fn(string $class): string => "use {$class};\n", $uses));
 
-        return "{$useBlock}\n\$bunny = new Bunny('your-api-key');\n\n{$statement}";
+        return "{$useBlock}\n{$section->setup}\n\n{$statement}";
     }
 
     /**

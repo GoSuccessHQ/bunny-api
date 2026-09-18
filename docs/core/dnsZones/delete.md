@@ -1,4 +1,4 @@
-# `dnsZones->delete()`
+# `$bunny->core->dnsZones->delete()`
 
 > Core Platform API · `DELETE /dnszone/{id}`
 

@@ -55,6 +55,13 @@ final class CastTest extends TestCase
         self::assertNull(Cast::dateTime(1_700_000_000));
     }
 
+    public function testConvertsMillisecondTimestamps(): void
+    {
+        self::assertSame('2024-10-15T00:27:45.848+00:00', Cast::timestampMs(1728952065848)?->format('Y-m-d\TH:i:s.vP'));
+        self::assertSame('1969-12-31T23:59:59.500+00:00', Cast::timestampMs(-500)?->format('Y-m-d\TH:i:s.vP'));
+        self::assertNull(Cast::timestampMs('soon'));
+    }
+
     public function testConvertsEnumsWithoutTypeErrors(): void
     {
         self::assertSame(ExampleIntEnum::Two, Cast::intEnum(ExampleIntEnum::class, 2));

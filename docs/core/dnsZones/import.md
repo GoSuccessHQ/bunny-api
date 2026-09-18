@@ -1,4 +1,4 @@
-# `dnsZones->import()`
+# `$bunny->core->dnsZones->import()`
 
 > Core Platform API · `POST /dnszone/{zoneId}/import`
 

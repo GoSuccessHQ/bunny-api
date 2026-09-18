@@ -1,4 +1,4 @@
-# `dnsZones->checkAvailability()`
+# `$bunny->core->dnsZones->checkAvailability()`
 
 > Core Platform API · `POST /dnszone/checkavailability`
 

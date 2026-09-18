@@ -1,4 +1,4 @@
-# `videoLibraries->update()`
+# `$bunny->core->videoLibraries->update()`
 
 > Core Platform API · `POST /videolibrary/{id}`
 

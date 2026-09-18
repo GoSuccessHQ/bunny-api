@@ -1,4 +1,4 @@
-# `videoLibraries->deleteLiveThumbnail()`
+# `$bunny->core->videoLibraries->deleteLiveThumbnail()`
 
 > Core Platform API · `DELETE /videolibrary/{id}/live/thumbnail`
 

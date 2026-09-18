@@ -1,4 +1,4 @@
-# `pullZones->loadFreeCertificate()`
+# `$bunny->core->pullZones->loadFreeCertificate()`
 
 > Core Platform API · `GET /pullzone/loadFreeCertificate`
 

@@ -1,4 +1,4 @@
-# `statistics->get()`
+# `$bunny->core->statistics->get()`
 
 > Core Platform API · `GET /statistics`
 

@@ -1,4 +1,4 @@
-# `videoLibraries->transcribingStatistics()`
+# `$bunny->core->videoLibraries->transcribingStatistics()`
 
 > Core Platform API · `GET /videolibrary/{id}/transcribing/statistics`
 

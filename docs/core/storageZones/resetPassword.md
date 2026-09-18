@@ -1,4 +1,4 @@
-# `storageZones->resetPassword()`
+# `$bunny->core->storageZones->resetPassword()`
 
 > Core Platform API · `POST /storagezone/{id}/resetPassword`
 

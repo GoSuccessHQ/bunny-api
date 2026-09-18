@@ -1,4 +1,4 @@
-# `videoLibraries->deleteLiveWatermark()`
+# `$bunny->core->videoLibraries->deleteLiveWatermark()`
 
 > Core Platform API · `DELETE /videolibrary/{id}/live/watermark`
 

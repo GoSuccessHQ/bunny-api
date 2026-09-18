@@ -1,4 +1,4 @@
-# `pullZones->completeExternalHttpCertificate()`
+# `$bunny->core->pullZones->completeExternalHttpCertificate()`
 
 > Core Platform API · `POST /pullzone/completeExternalHttpCertificate`
 

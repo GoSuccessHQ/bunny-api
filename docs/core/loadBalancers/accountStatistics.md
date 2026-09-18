@@ -1,4 +1,4 @@
-# `loadBalancers->accountStatistics()`
+# `$bunny->core->loadBalancers->accountStatistics()`
 
 > Core Platform API · `GET /loadbalancer/statistics`
 

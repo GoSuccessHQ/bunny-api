@@ -1,4 +1,4 @@
-# `videoLibraries->addAllowedReferrer()`
+# `$bunny->core->videoLibraries->addAllowedReferrer()`
 
 > Core Platform API · `POST /videolibrary/{id}/addAllowedReferrer`
 

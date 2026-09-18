@@ -14,4 +14,5 @@ BUNNY_API_KEY=your-api-key php examples/core-pull-zones.php
 | [core-pull-zones.php](core-pull-zones.php) | Iterating over all pull zones with hostnames and edge rules |
 | [core-dns.php](core-dns.php) | DNS zones, their records and the zone file export |
 | [core-statistics.php](core-statistics.php) | Traffic statistics with date filters and chart data |
+| [origin-errors.php](origin-errors.php) | Yesterday's origin errors of all pull zones |
 | [error-handling.php](error-handling.php) | Typed exceptions and the details they carry |

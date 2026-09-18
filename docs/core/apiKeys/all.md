@@ -1,4 +1,4 @@
-# `apiKeys->all()`
+# `$bunny->core->apiKeys->all()`
 
 > Core Platform API · `GET /apikey`
 

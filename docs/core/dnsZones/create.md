@@ -1,4 +1,4 @@
-# `dnsZones->create()`
+# `$bunny->core->dnsZones->create()`
 
 > Core Platform API · `POST /dnszone`
 

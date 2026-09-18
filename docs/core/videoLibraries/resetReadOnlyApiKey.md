@@ -1,4 +1,4 @@
-# `videoLibraries->resetReadOnlyApiKey()`
+# `$bunny->core->videoLibraries->resetReadOnlyApiKey()`
 
 > Core Platform API · `POST /videolibrary/{id}/resetReadOnlyApiKey`
 

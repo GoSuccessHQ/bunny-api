@@ -1,4 +1,4 @@
-# `edgeRules->delete()`
+# `$bunny->core->edgeRules->delete()`
 
 > Core Platform API · `DELETE /pullzone/{pullZoneId}/edgerules/{edgeRuleId}`
 

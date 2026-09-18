@@ -1,4 +1,4 @@
-# `pullZones->removeAllowedReferrer()`
+# `$bunny->core->pullZones->removeAllowedReferrer()`
 
 > Core Platform API · `POST /pullzone/{id}/removeAllowedReferrer`
 

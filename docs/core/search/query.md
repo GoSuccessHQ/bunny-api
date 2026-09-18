@@ -1,4 +1,4 @@
-# `search->query()`
+# `$bunny->core->search->query()`
 
 > Core Platform API · `GET /search`
 

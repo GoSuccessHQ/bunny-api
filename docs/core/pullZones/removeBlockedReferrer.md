@@ -1,4 +1,4 @@
-# `pullZones->removeBlockedReferrer()`
+# `$bunny->core->pullZones->removeBlockedReferrer()`
 
 > Core Platform API · `POST /pullzone/{id}/removeBlockedReferrer`
 

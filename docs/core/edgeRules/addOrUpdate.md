@@ -1,4 +1,4 @@
-# `edgeRules->addOrUpdate()`
+# `$bunny->core->edgeRules->addOrUpdate()`
 
 > Core Platform API · `POST /pullzone/{pullZoneId}/edgerules/addOrUpdate`
 

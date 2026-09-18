@@ -1,4 +1,4 @@
-# `pullZones->optimizerStatistics()`
+# `$bunny->core->pullZones->optimizerStatistics()`
 
 > Core Platform API · `GET /pullzone/{pullZoneId}/optimizer/statistics`
 

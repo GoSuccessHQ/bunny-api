@@ -1,4 +1,4 @@
-# `pullZones->resetSecurityKey()`
+# `$bunny->core->pullZones->resetSecurityKey()`
 
 > Core Platform API · `POST /pullzone/{id}/resetSecurityKey`
 

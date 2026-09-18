@@ -1,4 +1,4 @@
-# `videoLibraries->removeBlockedReferrer()`
+# `$bunny->core->videoLibraries->removeBlockedReferrer()`
 
 > Core Platform API · `POST /videolibrary/{id}/removeBlockedReferrer`
 

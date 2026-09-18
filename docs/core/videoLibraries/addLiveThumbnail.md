@@ -1,4 +1,4 @@
-# `videoLibraries->addLiveThumbnail()`
+# `$bunny->core->videoLibraries->addLiveThumbnail()`
 
 > Core Platform API · `PUT /videolibrary/{id}/live/thumbnail`
 

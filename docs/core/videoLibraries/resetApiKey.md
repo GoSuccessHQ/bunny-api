@@ -1,4 +1,4 @@
-# `videoLibraries->resetApiKey()`
+# `$bunny->core->videoLibraries->resetApiKey()`
 
 > Core Platform API · `POST /videolibrary/{id}/resetApiKey`
 

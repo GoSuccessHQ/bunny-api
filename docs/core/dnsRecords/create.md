@@ -1,4 +1,4 @@
-# `dnsRecords->create()`
+# `$bunny->core->dnsRecords->create()`
 
 > Core Platform API · `PUT /dnszone/{zoneId}/records`
 

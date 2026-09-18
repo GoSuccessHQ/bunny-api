@@ -1,4 +1,4 @@
-# `dnsZones->latestRecordScan()`
+# `$bunny->core->dnsZones->latestRecordScan()`
 
 > Core Platform API · `GET /dnszone/{zoneId}/records/scan`
 

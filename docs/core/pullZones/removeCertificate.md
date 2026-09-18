@@ -1,4 +1,4 @@
-# `pullZones->removeCertificate()`
+# `$bunny->core->pullZones->removeCertificate()`
 
 > Core Platform API · `DELETE /pullzone/{id}/removeCertificate`
 

@@ -1,4 +1,4 @@
-# `dnsRecords->all()`
+# `$bunny->core->dnsRecords->all()`
 
 > Core Platform API · `GET /dnszone/{zoneId}/records`
 

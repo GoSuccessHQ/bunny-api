@@ -1,4 +1,4 @@
-# `pullZones->safeHopStatistics()`
+# `$bunny->core->pullZones->safeHopStatistics()`
 
 > Core Platform API · `GET /pullzone/{pullZoneId}/safehop/statistics`
 

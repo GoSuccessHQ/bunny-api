@@ -1,4 +1,4 @@
-# `dnsZones->statistics()`
+# `$bunny->core->dnsZones->statistics()`
 
 > Core Platform API · `GET /dnszone/{id}/statistics`
 

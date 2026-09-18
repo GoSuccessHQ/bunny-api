@@ -1,4 +1,4 @@
-# `videoLibraries->drmStatistics()`
+# `$bunny->core->videoLibraries->drmStatistics()`
 
 > Core Platform API · `GET /videolibrary/{id}/drm/statistics`
 

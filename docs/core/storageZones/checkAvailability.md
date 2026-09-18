@@ -1,4 +1,4 @@
-# `storageZones->checkAvailability()`
+# `$bunny->core->storageZones->checkAvailability()`
 
 > Core Platform API · `POST /storagezone/checkavailability`
 

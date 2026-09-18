@@ -1,4 +1,4 @@
-# `pullZones->delete()`
+# `$bunny->core->pullZones->delete()`
 
 > Core Platform API · `DELETE /pullzone/{id}`
 

@@ -1,4 +1,4 @@
-# `purge->url()`
+# `$bunny->core->purge->url()`
 
 > Core Platform API · `POST /purge`
 

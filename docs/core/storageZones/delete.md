@@ -1,4 +1,4 @@
-# `storageZones->delete()`
+# `$bunny->core->storageZones->delete()`
 
 > Core Platform API · `DELETE /storagezone/{id}`
 

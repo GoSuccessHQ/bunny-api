@@ -24,8 +24,8 @@ A modern, strongly-typed, **dependency-free** PHP client for the
 
 | API | Namespace | Access | Status |
 | --- | --- | --- | --- |
-| [Core Platform API](https://docs.bunny.net/reference/bunnynet-api-overview) | `GoSuccess\Bunny\Core` | `$bunny->core` | ✅ |
-| Origin Errors API | `GoSuccess\Bunny\OriginErrors` | | planned |
+| [Core Platform API](https://bunny.net/docs/api-reference/core) | `GoSuccess\Bunny\Core` | `$bunny->core` | ✅ |
+| [Origin Errors API](https://bunny.net/docs/cdn/logging/origin-errors) | `GoSuccess\Bunny\OriginErrors` | `$bunny->originErrors` | ✅ |
 | CDN Logging API | `GoSuccess\Bunny\Logging` | | planned |
 | Edge Storage API | `GoSuccess\Bunny\Storage` | | planned |
 | Stream API | `GoSuccess\Bunny\Stream` | | planned |
@@ -172,6 +172,22 @@ foreach ($statistics->bandwidthUsedChart as $hour => $bytes) {
 
 Dates are always sent as UTC. Dates bunny.net returns without a time zone are
 read as UTC as well.
+
+## Origin Errors API
+
+Requests the CDN could not complete because the origin failed: DNS failures,
+timeouts (the CDN waits 60 seconds), connection errors and the like.
+
+```php
+$log = $bunny->originErrors->get($pullZoneId, new DateTimeImmutable('yesterday'));
+
+foreach ($log->errors as $error) {
+    echo $error->timestamp->format('H:i:s'), ' ', $error->statusCode, ' ', $error->errorCode, ' ', $error->requestUrl, PHP_EOL;
+}
+```
+
+The day is taken in UTC. bunny.net only retains recent days and does not
+document how to fetch more errors when `$log->hasMoreData` is set.
 
 ## Partial updates and clearing fields
 

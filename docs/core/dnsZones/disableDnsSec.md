@@ -1,4 +1,4 @@
-# `dnsZones->disableDnsSec()`
+# `$bunny->core->dnsZones->disableDnsSec()`
 
 > Core Platform API · `DELETE /dnszone/{id}/dnssec`
 

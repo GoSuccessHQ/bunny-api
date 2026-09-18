@@ -1,4 +1,4 @@
-# `storageZones->update()`
+# `$bunny->core->storageZones->update()`
 
 > Core Platform API · `POST /storagezone/{id}`
 

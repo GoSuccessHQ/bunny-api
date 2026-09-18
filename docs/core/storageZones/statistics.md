@@ -1,4 +1,4 @@
-# `storageZones->statistics()`
+# `$bunny->core->storageZones->statistics()`
 
 > Core Platform API · `GET /storagezone/{id}/statistics`
 

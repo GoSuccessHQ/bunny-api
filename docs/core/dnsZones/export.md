@@ -1,4 +1,4 @@
-# `dnsZones->export()`
+# `$bunny->core->dnsZones->export()`
 
 > Core Platform API · `GET /dnszone/{id}/export`
 

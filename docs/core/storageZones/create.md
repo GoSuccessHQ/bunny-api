@@ -1,4 +1,4 @@
-# `storageZones->create()`
+# `$bunny->core->storageZones->create()`
 
 > Core Platform API · `POST /storagezone`
 

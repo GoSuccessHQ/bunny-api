@@ -1,4 +1,4 @@
-# `pullZones->completeExternalDnsCertificate()`
+# `$bunny->core->pullZones->completeExternalDnsCertificate()`
 
 > Core Platform API · `POST /pullzone/completeExternalDnsCertificate`
 

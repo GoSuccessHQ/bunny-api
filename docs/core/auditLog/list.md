@@ -1,4 +1,4 @@
-# `auditLog->list()`
+# `$bunny->core->auditLog->list()`
 
 > Core Platform API · `GET /user/audit/{date}`
 
@@ -37,7 +37,6 @@ public function list(
 ## Example
 
 ```php
-use DateTimeImmutable;
 use GoSuccess\Bunny\Bunny;
 
 $bunny = new Bunny('your-api-key');

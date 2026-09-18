@@ -1,4 +1,4 @@
-# `pullZones->originShieldQueueStatistics()`
+# `$bunny->core->pullZones->originShieldQueueStatistics()`
 
 > Core Platform API · `GET /pullzone/{pullZoneId}/originshield/queuestatistics`
 

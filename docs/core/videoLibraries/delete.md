@@ -1,4 +1,4 @@
-# `videoLibraries->delete()`
+# `$bunny->core->videoLibraries->delete()`
 
 > Core Platform API · `DELETE /videolibrary/{id}`
 

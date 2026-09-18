@@ -1,10 +1,10 @@
 # API Reference
 
-One page per resource method. See the [README](../README.md) for an introduction and [examples/](../examples/) for runnable scripts.
+One page per method. See the [README](../README.md) for an introduction and [examples/](../examples/) for runnable scripts.
 
 ## Core Platform API
 
-Namespace `GoSuccess\Bunny\Core`, client `CoreClient`, reached via `$bunny->core`.
+Client `CoreClient` in `GoSuccess\Bunny\Core`, reached via `$bunny->core`.
 
 ### `pullZones`
 
@@ -197,3 +197,11 @@ Global search across the resources of the account.
 Price estimations.
 
 - [`estimate()`](core/pricing/estimate.md) — Get active price for a resource and optionally cost estimate if usage amount provided
+
+## Origin Errors API
+
+Client `OriginErrorsClient` in `GoSuccess\Bunny\OriginErrors`, reached via `$bunny->originErrors`.
+
+Requests the CDN could not complete because the origin failed.
+
+- [`get()`](origin-errors/client/get.md) — Get the origin errors of a pull zone on one day

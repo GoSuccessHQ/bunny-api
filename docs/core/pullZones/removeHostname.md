@@ -1,4 +1,4 @@
-# `pullZones->removeHostname()`
+# `$bunny->core->pullZones->removeHostname()`
 
 > Core Platform API · `DELETE /pullzone/{id}/removeHostname`
 

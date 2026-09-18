@@ -1,4 +1,4 @@
-# `storageZones->egressStatistics()`
+# `$bunny->core->storageZones->egressStatistics()`
 
 > Core Platform API · `GET /storagezone/{id}/statistics/egress`
 

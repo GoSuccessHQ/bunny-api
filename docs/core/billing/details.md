@@ -1,4 +1,4 @@
-# `billing->details()`
+# `$bunny->core->billing->details()`
 
 > Core Platform API · `GET /billing`
 

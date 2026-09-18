@@ -1,4 +1,4 @@
-# `billing->paymentRequestInvoicePdf()`
+# `$bunny->core->billing->paymentRequestInvoicePdf()`
 
 > Core Platform API · `GET /billing/payment-request-invoice/{id}/pdf`
 

@@ -1,4 +1,4 @@
-# `pullZones->setForceSsl()`
+# `$bunny->core->pullZones->setForceSsl()`
 
 > Core Platform API · `POST /pullzone/{id}/setForceSSL`
 

@@ -1,4 +1,4 @@
-# `pullZones->addBlockedIp()`
+# `$bunny->core->pullZones->addBlockedIp()`
 
 > Core Platform API · `POST /pullzone/{id}/addBlockedIp`
 

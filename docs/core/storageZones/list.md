@@ -1,4 +1,4 @@
-# `storageZones->list()`
+# `$bunny->core->storageZones->list()`
 
 > Core Platform API · `GET /storagezone`
 

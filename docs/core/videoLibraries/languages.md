@@ -1,4 +1,4 @@
-# `videoLibraries->languages()`
+# `$bunny->core->videoLibraries->languages()`
 
 > Core Platform API · `GET /videolibrary/languages`
 

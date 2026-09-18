@@ -80,6 +80,30 @@ final class Cast
     }
 
     /**
+     * Convert a Unix timestamp in milliseconds, as the logging APIs send it.
+     */
+    public static function timestampMs(mixed $value): ?DateTimeImmutable
+    {
+        $milliseconds = self::int($value);
+
+        if ($milliseconds === null) {
+            return null;
+        }
+
+        $seconds = intdiv($milliseconds, 1000);
+        $fraction = $milliseconds % 1000;
+
+        if ($fraction < 0) {
+            --$seconds;
+            $fraction += 1000;
+        }
+
+        $date = DateTimeImmutable::createFromFormat('U.v', \sprintf('%d.%03d', $seconds, $fraction));
+
+        return $date === false ? null : $date;
+    }
+
+    /**
      * @template T of BackedEnum
      *
      * @param class-string<T> $enum An int-backed enum.

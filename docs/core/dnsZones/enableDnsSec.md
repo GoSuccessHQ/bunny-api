@@ -1,4 +1,4 @@
-# `dnsZones->enableDnsSec()`
+# `$bunny->core->dnsZones->enableDnsSec()`
 
 > Core Platform API · `POST /dnszone/{id}/dnssec`
 

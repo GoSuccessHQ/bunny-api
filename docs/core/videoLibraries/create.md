@@ -1,4 +1,4 @@
-# `videoLibraries->create()`
+# `$bunny->core->videoLibraries->create()`
 
 > Core Platform API · `POST /videolibrary`
 

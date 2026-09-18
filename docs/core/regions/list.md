@@ -1,4 +1,4 @@
-# `regions->list()`
+# `$bunny->core->regions->list()`
 
 > Core Platform API · `GET /region`
 
