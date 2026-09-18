@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use GoSuccess\Bunny\Bunny;
 use GoSuccess\Bunny\Exception\ApiException;
 use GoSuccess\Bunny\Exception\NotFoundException;
+use GoSuccess\Bunny\Shield\Model\EventLogFilter;
 use GoSuccess\Bunny\Shield\Model\RateLimitRule;
 use GoSuccess\Bunny\Shield\Model\ShieldZone;
 use GoSuccess\Bunny\Shield\ShieldClient;
@@ -17,8 +18,8 @@ use PHPUnit\Framework\Attributes\CoversNothing;
 /**
  * Read-only checks of the Shield API against a real account.
  *
- * Only side-effect-free GET requests are made. `waf->recommendation()` is
- * deliberately absent: it has an AI generate a recommendation.
+ * Only requests without side effects are made: GETs and the event log search
+ * and export, which use POST.
  */
 #[CoversNothing]
 final class ShieldReadOnlyTest extends IntegrationTestCase
@@ -120,6 +121,52 @@ final class ShieldReadOnlyTest extends IntegrationTestCase
         foreach ($shield->eventLogs->all($id, new DateTimeImmutable('-1 day')) as $log) {
             self::assertNotNull($log->logId);
         }
+    }
+
+    public function testEventLogSearchAndExport(): void
+    {
+        $shield = self::client();
+        $id = self::zone()->shieldZoneId;
+        $from = new DateTimeImmutable('-70 hours');
+        $to = new DateTimeImmutable();
+
+        $rows = $shield->eventLogs->search($id, $from, $to, pageSize: 5);
+        self::assertLessThanOrEqual(5, \count($rows->rows));
+        self::assertSame([], $rows->groups);
+
+        $groups = $shield->eventLogs->search($id, $from, $to, filters: [new EventLogFilter('action', 'in', ['block', 'log'])], groupBy: ['ip'], buckets: 4);
+        self::assertSame([], $groups->rows);
+
+        foreach ($groups->groups as $group) {
+            self::assertArrayHasKey('ip', $group->key);
+            self::assertCount(4, $group->sparkline);
+        }
+
+        self::assertStringStartsWith('timestamp,', $shield->eventLogs->export($id, $from, $to));
+    }
+
+    public function testTriggeredRules(): void
+    {
+        $shield = self::client();
+
+        foreach ($shield->zones->all() as $zone) {
+            $triggered = $shield->waf->triggeredRules($zone->shieldZoneId);
+
+            if ($triggered->triggeredRules === [] || $triggered->triggeredRules[0]->ruleId === null) {
+                continue;
+            }
+
+            try {
+                self::assertSame($triggered->triggeredRules[0]->ruleId, $shield->waf->recommendation($zone->shieldZoneId, $triggered->triggeredRules[0]->ruleId)->ruleId);
+            } catch (ApiException $e) {
+                // AI recommendations need the Advanced plan; Shield says so with 202 Accepted.
+                self::assertSame('limit_reached.ai_recommendation', $e->errorKey);
+            }
+
+            return;
+        }
+
+        self::markTestSkipped('No Shield zone has triggered WAF rules.');
     }
 
     private static function client(): ShieldClient
