@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace GoSuccess\Bunny\Resource;
 
+use BackedEnum;
+use DateTimeInterface;
 use GoSuccess\Bunny\Exception\SerializationException;
 use GoSuccess\Bunny\Http\Connection;
+use GoSuccess\Bunny\Http\Query;
 use GoSuccess\Bunny\Model\ResponseModel;
 
 /**
@@ -14,6 +17,30 @@ use GoSuccess\Bunny\Model\ResponseModel;
 abstract class AbstractResource
 {
     public function __construct(protected readonly Connection $connection) {}
+
+    /**
+     * Encode a value for use as one path segment; dates become ISO 8601 in UTC.
+     */
+    protected function segment(string|int|BackedEnum|DateTimeInterface $value): string
+    {
+        return rawurlencode(Query::format('path', $value));
+    }
+
+    /**
+     * Require a decoded response to be a JSON object (or array).
+     *
+     * @return array<array-key, mixed>
+     */
+    protected static function expectObject(mixed $data): array
+    {
+        if (!\is_array($data)) {
+            $type = get_debug_type($data);
+
+            throw new SerializationException("Expected a JSON object, got {$type}.");
+        }
+
+        return $data;
+    }
 
     /**
      * Map a decoded response onto a model, rejecting anything but a JSON object.

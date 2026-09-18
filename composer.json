@@ -45,7 +45,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "GoSuccess\\Bunny\\Tests\\": "tests/"
+            "GoSuccess\\Bunny\\Tests\\": "tests/",
+            "GoSuccess\\Bunny\\Tools\\": "tools/"
         }
     },
     "scripts": {
@@ -54,6 +55,12 @@
         "stan": "phpstan analyse --memory-limit=2G",
         "cs": "php-cs-fixer fix --dry-run --diff",
         "cs-fix": "php-cs-fixer fix",
+        "specs": "php tools/fetch-specs.php",
+        "generate": [
+            "php tools/generate.php",
+            "php-cs-fixer fix",
+            "php tools/generate-docs.php"
+        ],
         "check": [
             "@cs",
             "@stan",
