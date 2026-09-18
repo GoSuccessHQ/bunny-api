@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace GoSuccess\Bunny\Tests\Unit\Shield;
 
+use DateTimeImmutable;
 use GoSuccess\Bunny\Exception\ApiException;
+use GoSuccess\Bunny\Exception\AuthenticationException;
 use GoSuccess\Bunny\Exception\BadRequestException;
 use GoSuccess\Bunny\Exception\NotFoundException;
 use GoSuccess\Bunny\Http\Response;
@@ -18,6 +20,10 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Envelope::class)]
 final class EnvelopeTest extends TestCase
 {
+    // Both verified live: a day older than the kept event logs, and an invalid key.
+    private const string OLD_EVENT_LOGS = '{"logs":null,"hasMoreData":false,"continuationToken":null,"startToken":null,"errorResponse":{"statusCode":401,"success":false,"message":"You can only view the past 3 days (72 hours) of Event Logs.","errorKey":"invalid_datetime_window.event_logs"}}';
+    private const string UNAUTHORIZED = '{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.2","title":"Unauthorized","status":401,"traceId":"00-abc-def-00"}';
+
     private const string PLAN_ERROR = '{"data":null,"error":{"statusCode":202,"success":false,"message":"Unable to make changes whilst on the Basic tier of Bunny Shield.","errorKey":"invalid_plan_type.bot_detection"}}';
 
     /**
@@ -42,6 +48,29 @@ final class EnvelopeTest extends TestCase
     public function testClassifiesErrorsInSuccessfulResponses(string $body, ?int $expected): void
     {
         self::assertSame($expected, Envelope::errorStatus(new Response(202, $body)));
+    }
+
+    public function testTellsRejectedRequestsFromFailedAuthentications(): void
+    {
+        self::assertSame(400, Envelope::errorStatus(new Response(401, self::OLD_EVENT_LOGS)));
+        self::assertNull(Envelope::errorStatus(new Response(401, self::UNAUTHORIZED)));
+    }
+
+    public function testRaisesEventLogsOfOldDaysAsBadRequests(): void
+    {
+        $http = new MockHttpClient(new Response(401, self::OLD_EVENT_LOGS), new Response(401, self::UNAUTHORIZED));
+        $eventLogs = new ShieldClient('key', httpClient: $http)->eventLogs;
+
+        try {
+            $eventLogs->list(42, new DateTimeImmutable('-4 days'));
+            self::fail('Expected a BadRequestException.');
+        } catch (BadRequestException $e) {
+            self::assertSame(401, $e->statusCode);
+            self::assertSame('invalid_datetime_window.event_logs', $e->errorKey);
+        }
+
+        $this->expectException(AuthenticationException::class);
+        $eventLogs->list(42, new DateTimeImmutable());
     }
 
     public function testTurnsAnAcceptedErrorIntoAnException(): void

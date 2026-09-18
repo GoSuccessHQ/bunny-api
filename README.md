@@ -590,7 +590,10 @@ support) and the raw `$responseBody`. Network failures throw a
 The Shield API reports many failures with `202 Accepted` and the error in the
 body. These are raised, too: as `NotFoundException` for error keys starting with
 `not_found`, otherwise as `ApiException` (e.g. `invalid_plan_type.bot_detection`
-for a feature the zone's plan lacks). `$statusCode` keeps the actual status.
+for a feature the zone's plan lacks). Shield also answers some rejected requests
+with `401`, e.g. event logs of a day older than the kept three days
+(`invalid_datetime_window.event_logs`); as the API key is not the problem, these
+are raised as `BadRequestException`. `$statusCode` keeps the actual status.
 
 ```php
 use GoSuccess\Bunny\Exception\NotFoundException;

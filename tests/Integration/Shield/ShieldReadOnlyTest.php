@@ -7,6 +7,7 @@ namespace GoSuccess\Bunny\Tests\Integration\Shield;
 use DateTimeImmutable;
 use GoSuccess\Bunny\Bunny;
 use GoSuccess\Bunny\Exception\ApiException;
+use GoSuccess\Bunny\Exception\BadRequestException;
 use GoSuccess\Bunny\Exception\NotFoundException;
 use GoSuccess\Bunny\Shield\Model\EventLogFilter;
 use GoSuccess\Bunny\Shield\Model\RateLimitRule;
@@ -120,6 +121,14 @@ final class ShieldReadOnlyTest extends IntegrationTestCase
 
         foreach ($shield->eventLogs->all($id, new DateTimeImmutable('-1 day')) as $log) {
             self::assertNotNull($log->logId);
+        }
+
+        try {
+            // Only today and the two days before are kept; bunny.net answers 401 here.
+            $shield->eventLogs->list($id, new DateTimeImmutable('-4 days'));
+            self::fail('Expected a BadRequestException.');
+        } catch (BadRequestException $e) {
+            self::assertSame('invalid_datetime_window.event_logs', $e->errorKey);
         }
     }
 

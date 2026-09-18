@@ -4,6 +4,8 @@
 
 Iterate lazily over all event logs of one day, across all pages.
 
+Only the day counts, taken in UTC; bunny.net keeps the event logs of today and the two days before, see list().
+
 ## Signature
 
 ```php

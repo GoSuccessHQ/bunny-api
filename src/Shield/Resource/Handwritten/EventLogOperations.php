@@ -7,6 +7,7 @@ namespace GoSuccess\Bunny\Shield\Resource\Handwritten;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use GoSuccess\Bunny\Exception\BadRequestException;
 use GoSuccess\Bunny\Http\Connection;
 use GoSuccess\Bunny\Http\Method;
 use GoSuccess\Bunny\Http\Stream;
@@ -26,6 +27,10 @@ trait EventLogOperations
     /**
      * Get a page of the event logs of one day.
      *
+     * Only the day counts, taken in UTC; its time is ignored. bunny.net keeps
+     * the event logs of today and the two days before (verified live) and
+     * rejects older days with invalid_datetime_window.event_logs.
+     *
      * The first page is requested without a continuation token (verified live);
      * each further page with the token of the previous one.
      *
@@ -36,6 +41,8 @@ trait EventLogOperations
      * @param string|null       $continuationToken The position returned by the previous page; null for the first page.
      *
      * @return Page<EventLog>
+     *
+     * @throws BadRequestException If the day lies outside the kept event logs.
      */
     public function list(int $shieldZoneId, DateTimeInterface $date, ?string $continuationToken = null): Page
     {
@@ -60,12 +67,17 @@ trait EventLogOperations
     /**
      * Iterate lazily over all event logs of one day, across all pages.
      *
+     * Only the day counts, taken in UTC; bunny.net keeps the event logs of
+     * today and the two days before, see list().
+     *
      * `GET /shield/event-logs/{shieldZoneId}/{date}/{continuationToken}`
      *
      * @param int               $shieldZoneId The ID of the Shield zone.
      * @param DateTimeInterface $date         The day, taken in UTC.
      *
      * @return Paginator<EventLog>
+     *
+     * @throws BadRequestException If the day lies outside the kept event logs.
      */
     public function all(int $shieldZoneId, DateTimeInterface $date): Paginator
     {

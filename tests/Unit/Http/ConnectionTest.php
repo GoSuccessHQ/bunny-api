@@ -276,6 +276,23 @@ final class ConnectionTest extends TestCase
         self::assertCount(2, $http->requests);
     }
 
+    public function testLetsTheHookPickTheExceptionOfErrorResponses(): void
+    {
+        $http = new MockHttpClient(new Response(401, 'rejected'), new Response(401, 'denied'));
+        $errorStatus = static fn(Response $response): ?int => $response->body === 'rejected' ? 400 : null;
+        $connection = new Connection('https://api.bunny.net', 'secret-key', new ClientOptions(), $http, new SpyRateLimiter(), new FakeClock(), $errorStatus);
+
+        try {
+            $connection->json(Method::Get, 'thing');
+            self::fail('Expected a BadRequestException.');
+        } catch (BadRequestException $e) {
+            self::assertSame(401, $e->statusCode);
+        }
+
+        $this->expectException(AuthenticationException::class);
+        $connection->json(Method::Get, 'thing');
+    }
+
     private function connection(
         MockHttpClient $http,
         ClientOptions $options = new ClientOptions(),

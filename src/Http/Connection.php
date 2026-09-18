@@ -35,10 +35,11 @@ final class Connection
 
     /**
      * @param string                        $accessKey   Value of the `AccessKey` header.
-     * @param (Closure(Response): ?int)|null $errorStatus For APIs that answer some failures with a 2xx
-     *                                                    status: spots an error in the body of a
-     *                                                    successful response and returns the status
-     *                                                    that classifies it, or null if there is none.
+     * @param (Closure(Response): ?int)|null $errorStatus For APIs whose status codes mislead: returns the
+     *                                                    status that classifies the error a response
+     *                                                    reports, or null. A successful response with
+     *                                                    such a status becomes an error; for an error
+     *                                                    response, it picks the exception class.
      */
     public function __construct(
         string $baseUri,
@@ -158,7 +159,7 @@ final class Connection
                 continue;
             }
 
-            throw ApiException::fromResponse($response, $request);
+            throw ApiException::fromResponse($response, $request, $this->errorStatus === null ? null : ($this->errorStatus)($response));
         }
     }
 

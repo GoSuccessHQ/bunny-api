@@ -7,7 +7,7 @@ namespace GoSuccess\Bunny\Shield;
 use GoSuccess\Bunny\Http\Response;
 
 /**
- * Spots failures that the Shield API reports with a successful status.
+ * Spots failures that the Shield API reports with a misleading status.
  *
  * Shield answers many failures with `202 Accepted` and the error in the body,
  * e.g. `{"data": null, "error": {"success": false, "message": "…", "errorKey":
@@ -27,8 +27,9 @@ final class Envelope
      * A failure is `success: false` together with a message or error key, at
      * the top level or in `error` or `errorResponse`; the empty defaults of a
      * successful response carry neither. Error keys starting with `not_found`
-     * classify as 404, others as the status in the body if that is an error
-     * status, else as the actual status.
+     * classify as 404, a 401 with an error key as 400, since a failed
+     * authentication has none (verified live), others as the status in the
+     * body if that is an error status, else as the actual status.
      */
     public static function errorStatus(Response $response): ?int
     {
@@ -59,8 +60,12 @@ final class Envelope
             }
 
             $status = $candidate['statusCode'] ?? null;
+            $status = \is_int($status) && $status >= 400 ? $status : $response->statusCode;
 
-            return \is_int($status) && $status >= 400 ? $status : $response->statusCode;
+            // A failed authentication comes as bare problem details; a 401 with an
+            // error key rejects the request itself, e.g. event logs of a day
+            // outside the last three (invalid_datetime_window.event_logs).
+            return $status === 401 && $errorKey !== null ? 400 : $status;
         }
 
         return null;

@@ -4,6 +4,8 @@
 
 Get a page of the event logs of one day.
 
+Only the day counts, taken in UTC; its time is ignored. bunny.net keeps the event logs of today and the two days before (verified live) and rejects older days with invalid_datetime_window.event_logs.
+
 The first page is requested without a continuation token (verified live); each further page with the token of the previous one.
 
 ## Signature
