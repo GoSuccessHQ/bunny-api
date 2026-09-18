@@ -108,12 +108,21 @@ final class ResourceWriter
         $call = $this->call($method, $file, $method->parameters);
         $items = $this->read(new PhpType(PhpType::LIST, item: $itemType), "\$data['{$pagination->items}'] ?? null", null, $file);
         $object = "self::expectObject({$call})";
+        $position = '';
+
+        if ($pagination->withPosition) {
+            foreach ($method->parameters as $parameter) {
+                if ($parameter->location === ParameterDefinition::QUERY && $parameter->specName === $pagination->position) {
+                    $position = ", \${$parameter->phpName}";
+                }
+            }
+        }
 
         $list = $this->docBlock($method, $method->parameters, $file, ["@return {$page}<{$itemDoc}>"])
             . $this->deprecation($method)
             . "    public function {$method->config->name}({$this->signature($method->parameters, $file)}): {$page}\n    {\n"
             . $this->bodyStatements($method, $file)
-            . "        \$data = {$object};\n\n        return {$factory}(\$data, {$items});\n    }\n";
+            . "        \$data = {$object};\n\n        return {$factory}(\$data, {$items}{$position});\n    }\n";
 
         if ($method->config->all === null) {
             return $list;

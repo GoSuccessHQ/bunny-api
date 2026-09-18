@@ -47,6 +47,8 @@ final class ApiExceptionTest extends TestCase
         yield 'stream' => ['{"success":false,"message":"Video not found","statusCode":404}', 'Video not found', null, null];
         yield 'logging' => ['{"error":{"code":"forbidden","message":"No access","details":null}}', 'No access', 'forbidden', null];
         yield 'problem details' => ['{"type":"x","title":"Not Found","status":404,"detail":"App missing"}', 'App missing', null, null];
+        yield 'validation list' => ['{"title":"Validation Error","status":400,"detail":"One or more validation errors occurred.","errors":[{"field":"limit","message":"Value for \'limit\' must be between 1 and 1000."}]}', "One or more validation errors occurred. limit: Value for 'limit' must be between 1 and 1000.", null, 'limit'];
+        yield 'validation map' => ['{"title":"One or more validation errors occurred.","status":400,"errors":{"Name":["The Name field is required.","Too short."]}}', 'One or more validation errors occurred. Name: The Name field is required.; Name: Too short.', null, 'Name'];
         yield 'shield envelope' => ['{"data":null,"error":{"success":false,"message":"Zone missing","errorKey":"shield.zone"}}', 'Zone missing', 'shield.zone', null];
         yield 'shield errorResponse' => ['{"logs":null,"errorResponse":{"success":false,"message":"Rule missing","errorKey":"not_found.waf_rule"}}', 'Rule missing', 'not_found.waf_rule', null];
         yield 'plain text' => ['Bad Gateway', 'Bad Gateway', null, null];

@@ -26,6 +26,8 @@ final readonly class PaginationConfig
      * @param string          $items    Response property holding the items.
      * @param string          $factory  "Class::method", see ApiConfig::referencedClass(), called
      *                                  as factory(array $data, list $items): Page.
+     * @param bool            $withPosition Whether the factory also receives the requested
+     *                                  position: factory($data, $items, $position).
      */
     public function __construct(
         public string $name,
@@ -37,6 +39,7 @@ final readonly class PaginationConfig
         public ?int $allSize,
         public string $items,
         public string $factory,
+        public bool $withPosition = false,
     ) {}
 
     public static function fromArray(string $name, ConfigReader $reader): self
@@ -57,6 +60,7 @@ final readonly class PaginationConfig
             allSize: $reader->optionalInt('allSize'),
             items: $reader->string('items'),
             factory: $reader->string('factory'),
+            withPosition: $reader->bool('withPosition'),
         );
 
         $reader->assertNoUnknownKeys();

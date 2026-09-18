@@ -62,7 +62,9 @@ final class GeneratedResourcesTest extends TestCase
 
         $uri = parse_url($request->uri);
         self::assertIsArray($uri);
-        self::assertSame('/' . $expectedPath, $uri['path'] ?? null);
+        // The base URI may have a path of its own, e.g. https://api.bunny.net/mc.
+        $basePath = rtrim((string) parse_url($analysis->config->baseUri, \PHP_URL_PATH), '/');
+        self::assertSame("{$basePath}/{$expectedPath}", $uri['path'] ?? null);
         self::assertSame(Query::build($expectedQuery), $uri['query'] ?? '');
 
         if ($expectedBody === null) {

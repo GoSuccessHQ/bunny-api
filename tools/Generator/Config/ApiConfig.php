@@ -34,6 +34,8 @@ final readonly class ApiConfig
      * @param list<string>                        $voidResponses     Schemas that carry no payload, e.g. a bare status envelope.
      * @param string|null                         $envelope          Property holding the payload of enveloped responses;
      *                                                               an object with only it and error properties is unwrapped.
+     * @param bool                                $requestBodiesRequired Treat request bodies as required where the specification
+     *                                                               omits the flag.
      * @param list<string>                        $errorProperties   Properties that carry the error of a failed request in a
      *                                                               successful response; left out of the models.
      * @param string|null                         $errorStatus       "Class::method", see referencedClass(), called as
@@ -59,6 +61,7 @@ final readonly class ApiConfig
         public array $clientParameters,
         public array $voidResponses,
         public ?string $envelope,
+        public bool $requestBodiesRequired,
         public array $errorProperties,
         public ?string $errorStatus,
         public array $pagination,
@@ -119,6 +122,7 @@ final readonly class ApiConfig
             clientParameters: $clientParameters,
             voidResponses: $reader->stringList('voidResponses'),
             envelope: $reader->optionalString('envelope'),
+            requestBodiesRequired: $reader->bool('requestBodiesRequired'),
             errorProperties: $reader->stringList('errorProperties'),
             errorStatus: $reader->optionalString('errorStatus'),
             pagination: $pagination,

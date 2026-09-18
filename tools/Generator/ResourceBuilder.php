@@ -193,7 +193,7 @@ final class ResourceBuilder
             throw new RuntimeException("{$context}: request body of type {$type->kind} is not supported.");
         }
 
-        $required = $operation->isRequestBodyRequired();
+        $required = $operation->isRequestBodyRequired() || $this->registry->config->requestBodiesRequired;
         $name = $config->parameters['@body'] ?? lcfirst(substr($type->class ?? 'Payload', (int) strrpos($type->class ?? '\\Payload', '\\') + 1));
         $definition = new ParameterDefinition(
             specName: '@body',

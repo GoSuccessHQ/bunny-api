@@ -12,8 +12,10 @@ namespace GoSuccess\Bunny\Exception;
  * - Stream: `{"success", "message", "statusCode"}`
  * - Logging: `{"error": {"code", "message", "details"}}`
  * - Shield and Magic Containers: RFC 7807 problem details
- *   (`{"title", "detail", …}`), `{"error": {"errorKey", "message"}}` or
- *   `{"errorResponse": {"errorKey", "message"}}`
+ *   (`{"title", "detail", "errors", …}`), `{"error": {"errorKey", "message"}}`
+ *   or `{"errorResponse": {"errorKey", "message"}}`
+ *
+ * Field errors of validation problems are appended to the message.
  *
  * @internal
  */
@@ -46,14 +48,55 @@ final readonly class ErrorDetails
             default => [],
         };
 
+        $message = self::firstString($decoded, ['Message', 'message', 'detail', 'title'])
+            ?? self::firstString($nested, ['message', 'Message', 'detail', 'title'])
+            ?? self::firstString($decoded, ['error']);
+        $violations = self::violations($decoded['errors'] ?? null);
+
+        if ($violations !== []) {
+            $list = implode('; ', array_map(
+                static fn(array $violation): string => $violation['field'] === null ? $violation['message'] : "{$violation['field']}: {$violation['message']}",
+                $violations,
+            ));
+            $message = self::excerpt($message === null ? $list : "{$message} {$list}");
+        }
+
         return new self(
-            message: self::firstString($decoded, ['Message', 'message', 'detail', 'title'])
-                ?? self::firstString($nested, ['message', 'Message', 'detail', 'title'])
-                ?? self::firstString($decoded, ['error']),
+            message: $message,
             errorKey: self::firstString($decoded, ['ErrorKey', 'errorKey'])
                 ?? self::firstString($nested, ['errorKey', 'ErrorKey', 'code']),
-            field: self::firstString($decoded, ['Field', 'field']),
+            field: self::firstString($decoded, ['Field', 'field']) ?? $violations[0]['field'] ?? null,
         );
+    }
+
+    /**
+     * The field errors of an RFC 7807 validation problem, as a list
+     * (`[{"field", "message"}]`, Magic Containers) or as a map
+     * (`{"Field": ["message"]}`, ASP.NET).
+     *
+     * @return list<array{field: string|null, message: string}>
+     */
+    private static function violations(mixed $errors): array
+    {
+        if (!\is_array($errors)) {
+            return [];
+        }
+
+        $violations = [];
+
+        foreach ($errors as $key => $error) {
+            if (\is_array($error) && \is_string($error['message'] ?? null)) {
+                $violations[] = ['field' => \is_string($error['field'] ?? null) ? $error['field'] : null, 'message' => $error['message']];
+            } elseif (\is_string($key) && \is_array($error)) {
+                foreach ($error as $message) {
+                    if (\is_string($message)) {
+                        $violations[] = ['field' => $key, 'message' => $message];
+                    }
+                }
+            }
+        }
+
+        return $violations;
     }
 
     /**

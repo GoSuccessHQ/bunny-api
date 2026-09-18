@@ -46,6 +46,13 @@ final class Samples
 
             if ($value !== null) {
                 $payload[$property->jsonName] = $value;
+            } elseif ($forRequest && ($property->required || !$model->response)) {
+                // Too deep to nest: requestModel() passes an empty value instead.
+                $empty = $this->emptyValue($property);
+
+                if ($empty !== Undefined::Value) {
+                    $payload[$property->jsonName] = $empty;
+                }
             }
         }
 
