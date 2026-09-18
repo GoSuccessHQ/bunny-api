@@ -284,3 +284,141 @@ Collections that group the videos of the library.
 View and watch time statistics of the library or of one video.
 
 - [`get()`](stream/statistics/get.md) — Get Video Statistics
+
+## Shield API
+
+Client `ShieldClient` in `GoSuccess\Bunny\Shield`, reached via `$bunny->shield`.
+
+### `zones`
+
+Shield zones: the protection settings of pull zones.
+
+- [`list()`](shield/zones/list.md) — Get all of your Shield Zone Configurations
+- [`all()`](shield/zones/all.md) — Iterate lazily over every item of list(), across all pages
+- [`get()`](shield/zones/get.md) — Get Singular Shield Zone Configuration
+- [`getByPullZone()`](shield/zones/getByPullZone.md) — Get Singular Shield Zone Configuration for PullZone
+- [`pullZoneMapping()`](shield/zones/pullZoneMapping.md) — Get Active Shield Zones for Pullzone Mapping
+- [`defaults()`](shield/zones/defaults.md) — Get the recommended defaults for creating a Shield Zone
+- [`create()`](shield/zones/create.md) — Create a Shield Zone for your PullZone
+- [`createUnderAttack()`](shield/zones/createUnderAttack.md) — Create a Shield Zone in under-attack mode for your PullZone
+- [`update()`](shield/zones/update.md) — Update your Shield Zone configuration
+
+### `waf`
+
+The managed WAF rules, their review and the WAF settings catalog.
+
+- [`rules()`](shield/waf/rules.md) — Retrieve all available WAF rules for a Shield Zone
+- [`rulesByPlan()`](shield/waf/rulesByPlan.md) — Retrieve WAF rules segmented by subscription plan
+- [`triggeredRules()`](shield/waf/triggeredRules.md) — Review all triggered WAF rules for the specified Shield Zone
+- [`reviewTriggeredRule()`](shield/waf/reviewTriggeredRule.md) — Review and update the action of a triggered WAF rule
+- [`recommendation()`](shield/waf/recommendation.md) — Retrieve an AI recommendation for a triggered WAF rule
+- [`profiles()`](shield/waf/profiles.md) — Retrieve all available WAF profiles
+- [`enums()`](shield/waf/enums.md) — Retrieve all available WAF enum mappings
+- [`engineConfig()`](shield/waf/engineConfig.md) — Retrieve the default WAF engine configuration
+
+### `customRules`
+
+Custom WAF rules of Shield zones.
+
+- [`list()`](shield/customRules/list.md) — Retrieve custom WAF rules configured for the specified Shield Zone
+- [`all()`](shield/customRules/all.md) — Iterate lazily over every item of list(), across all pages
+- [`get()`](shield/customRules/get.md) — Retrieve a specific custom WAF rule
+- [`create()`](shield/customRules/create.md) — Create a new custom WAF rule
+- [`update()`](shield/customRules/update.md) — Update an existing custom WAF rule
+- [`replace()`](shield/customRules/replace.md) — Update an existing custom WAF rule
+- [`delete()`](shield/customRules/delete.md) — Delete a custom WAF rule
+
+### `rateLimits`
+
+Rate limit rules of Shield zones.
+
+- [`list()`](shield/rateLimits/list.md) — Get Rate Limits for your Shield Zone
+- [`all()`](shield/rateLimits/all.md) — Iterate lazily over every item of list(), across all pages
+- [`get()`](shield/rateLimits/get.md) — Get Individual Rate Limit for your Shield Zone
+- [`create()`](shield/rateLimits/create.md) — Create a Rate Limit for your Shield Zone
+- [`update()`](shield/rateLimits/update.md) — Update a Rate Limit configuration on your Shield Zone
+- [`delete()`](shield/rateLimits/delete.md) — Delete a Rate Limit on your Shield Zone
+
+### `accessLists`
+
+Managed and custom access lists of Shield zones.
+
+- [`list()`](shield/accessLists/list.md) — Get all Access Lists available for a Shield Zone
+- [`get()`](shield/accessLists/get.md) — Get the specified Custom Access List associated with a Shield Zone
+- [`create()`](shield/accessLists/create.md) — Create a new Custom Access List associated with a Shield Zone
+- [`update()`](shield/accessLists/update.md) — Update the specified Custom Access List associated with a Shield Zone
+- [`delete()`](shield/accessLists/delete.md) — Delete the specified Custom Access List associated with a Shield Zone
+- [`configure()`](shield/accessLists/configure.md) — Update Access List Configuration for a Shield Zone
+- [`enums()`](shield/accessLists/enums.md) — Get all Access Lists API enumeration types and their values
+
+### `botDetection`
+
+Bot detection and the handling of known bots and bot categories.
+
+- [`get()`](shield/botDetection/get.md) — Your current Bot Detection configuration
+- [`update()`](shield/botDetection/update.md) — Update your current Bot Detection configuration
+- [`categorization()`](shield/botDetection/categorization.md) — List bots available for explicit allow/block configuration on this Shield Zone, grouped by category
+- [`setBotAction()`](shield/botDetection/setBotAction.md) — Set or clear the action applied to a categorised bot for this Shield Zone
+- [`setCategoryAction()`](shield/botDetection/setCategoryAction.md) — Set or clear the action applied to every bot in a category for this Shield Zone
+
+### `uploadScanning`
+
+Antivirus and CSAM scanning of uploads.
+
+- [`get()`](shield/uploadScanning/get.md) — Get your Current Upload Scanning Configuration
+- [`update()`](shield/uploadScanning/update.md) — Update your Upload Scanning Configuration
+
+### `apiGuardian`
+
+API Guardian: request validation against an OpenAPI specification.
+
+- [`get()`](shield/apiGuardian/get.md) — Get the API Guardian configuration and endpoints
+- [`update()`](shield/apiGuardian/update.md) — Update the API Guardian configuration (enabled, execution mode, body limit action)
+- [`updateEndpoint()`](shield/apiGuardian/updateEndpoint.md) — Update your API Guardian Endpoint configuration
+- [`uploadSpecification()`](shield/apiGuardian/uploadSpecification.md) — Upload your OpenAPI specification
+- [`updateSpecification()`](shield/apiGuardian/updateSpecification.md) — Update your OpenAPI specification
+- [`enums()`](shield/apiGuardian/enums.md) — Get all API Guardian enumeration types and their values
+
+### `customPages`
+
+Custom HTML pages shown to blocked, challenged or rate-limited visitors.
+
+- [`get()`](shield/customPages/get.md) — Get the HTML of a custom page
+- [`upload()`](shield/customPages/upload.md) — Upload the HTML of a custom page, replacing the current one
+- [`delete()`](shield/customPages/delete.md) — Delete a custom page; bunny.net's own page is shown again
+
+### `eventLogs`
+
+Event logs of the requests Shield acted on.
+
+- [`list()`](shield/eventLogs/list.md) — Get a page of the event logs of one day
+- [`all()`](shield/eventLogs/all.md) — Iterate lazily over all event logs of one day, across all pages
+- [`search()`](shield/eventLogs/search.md) — Search, filter and group the event logs of a time window
+- [`export()`](shield/eventLogs/export.md) — Export the filtered event logs of a time window as CSV
+
+### `metrics`
+
+Request metrics and billing overages of Shield zones.
+
+- [`overview()`](shield/metrics/overview.md) — Get an overview of metrics for the specified Shield Zone
+- [`detailed()`](shield/metrics/detailed.md) — Get a detailed metrics overview for the specified Shield Zone within the selected time range and resolution
+- [`overages()`](shield/metrics/overages.md) — Get the overage breakdown for the specified Shield Zone for a given month, segmented by billing plan changes
+- [`rateLimits()`](shield/metrics/rateLimits.md) — Get aggregated rate limit metrics for the specified Shield Zone
+- [`rateLimit()`](shield/metrics/rateLimit.md) — Get detailed metrics for the specified Rate Limit
+- [`wafRule()`](shield/metrics/wafRule.md) — Get metrics for a specific WAF Rule within the specified Shield Zone
+- [`botDetection()`](shield/metrics/botDetection.md) — Get bot detection metrics for the specified Shield Zone
+- [`uploadScanning()`](shield/metrics/uploadScanning.md) — Get upload scanning metrics for the specified Shield Zone
+- [`apiGuardian()`](shield/metrics/apiGuardian.md) — Get API Guardian metrics for the specified Shield Zone
+- [`apiGuardianEndpoint()`](shield/metrics/apiGuardianEndpoint.md) — Get metrics for a specific API Guardian endpoint within the specified Shield Zone
+
+### `ddos`
+
+The DDoS settings catalog.
+
+- [`enums()`](shield/ddos/enums.md) — List of all DDoS Enum Mappings
+
+### `promotions`
+
+Shield promotions of the account.
+
+- [`state()`](shield/promotions/state.md) — Get the Shield promotions of the account

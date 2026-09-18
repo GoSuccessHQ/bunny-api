@@ -29,7 +29,7 @@ A modern, strongly-typed, **dependency-free** PHP client for the
 | [CDN Logging API](https://bunny.net/docs/cdn/logging) | `GoSuccess\Bunny\Logging` | `$bunny->logging` | ✅ |
 | [Edge Storage API](https://bunny.net/docs/api-reference/storage) | `GoSuccess\Bunny\Storage` | `$bunny->storage(...)` | ✅ |
 | [Stream API](https://bunny.net/docs/api-reference/stream) | `GoSuccess\Bunny\Stream` | `$bunny->stream(...)` | ✅ |
-| Shield API | `GoSuccess\Bunny\Shield` | | planned |
+| [Shield API](https://bunny.net/docs/api-reference/shield) | `GoSuccess\Bunny\Shield` | `$bunny->shield` | ✅ |
 | Edge Scripting API | `GoSuccess\Bunny\EdgeScripting` | | planned |
 | Magic Containers API | `GoSuccess\Bunny\MagicContainers` | | planned |
 
@@ -351,6 +351,78 @@ if ($event->status === WebhookStatus::Finished) {
 }
 ```
 
+## Shield API
+
+Shield protects pull zones with a WAF, rate limits, access lists, bot detection,
+upload scanning and API Guardian. Everything is organized by Shield zone:
+
+```php
+use GoSuccess\Bunny\Shield\Enum\RateLimitAction;
+use GoSuccess\Bunny\Shield\Enum\RateLimitBlockTime;
+use GoSuccess\Bunny\Shield\Enum\RateLimitCounterKey;
+use GoSuccess\Bunny\Shield\Enum\RateLimitTimeframe;
+use GoSuccess\Bunny\Shield\Enum\WafRuleOperatorType;
+use GoSuccess\Bunny\Shield\Model\RateLimitRuleConfiguration;
+
+$shield = $bunny->shield;
+$zone = $shield->zones->getByPullZone($pullZoneId);
+
+echo $zone->planType?->name, ', WAF: ', $zone->wafExecutionMode?->name, PHP_EOL;
+
+// At most 8 login attempts per IP in 10 seconds, then block for a minute.
+$shield->rateLimits->create(
+    shieldZoneId: $zone->shieldZoneId,
+    ruleName: 'Limit login attempts',
+    ruleConfiguration: new RateLimitRuleConfiguration(
+        actionType: RateLimitAction::RateLimit,
+        variableTypes: ['REQUEST_URI' => ''],
+        operatorType: WafRuleOperatorType::CONTAINS,
+        value: 'wp-login',
+        requestCount: 8,
+        counterKeyType: RateLimitCounterKey::IP,
+        timeframe: RateLimitTimeframe::PerTenSeconds,
+        blockTime: RateLimitBlockTime::ForOneMinute,
+    ),
+);
+
+foreach ($shield->eventLogs->all($zone->shieldZoneId, new DateTimeImmutable('yesterday')) as $log) {
+    echo $log->labels?->country, ' ', $log->labels?->ruleId, PHP_EOL;
+}
+
+$metrics = $shield->metrics->overview($zone->shieldZoneId);
+```
+
+The event logs of the last 72 hours can also be searched, grouped and exported
+as CSV:
+
+```php
+use GoSuccess\Bunny\Http\Stream;
+use GoSuccess\Bunny\Shield\Model\EventLogFilter;
+
+$top = $shield->eventLogs->search(
+    $zone->shieldZoneId,
+    from: new DateTimeImmutable('-1 hour'),
+    to: new DateTimeImmutable(),
+    filters: [new EventLogFilter('country', 'in', ['DE', 'AT'])],
+    groupBy: ['ip'],
+);
+
+$shield->eventLogs->export($zone->shieldZoneId, new DateTimeImmutable('-1 day'), new DateTimeImmutable(), sink: Stream::fromFile('events.csv', 'wb'));
+```
+
+Custom block, challenge and rate limit pages are plain HTML:
+
+```php
+use GoSuccess\Bunny\Shield\Enum\CustomPageType;
+
+$shield->customPages->upload($zone->shieldZoneId, CustomPageType::Block, file_get_contents('blocked.html'));
+```
+
+Shield answers many failures, "not found" among them, with `202 Accepted` and
+the error in the body. The client raises them like error statuses (see
+[Error handling](#error-handling)), so a missing rule never comes back as an
+empty object.
+
 ## Partial updates and clearing fields
 
 Request models serialize **only what you pass**, so an update touches nothing
@@ -419,6 +491,11 @@ All of them extend `ApiException`, which carries `$statusCode`, `$errorKey` (e.g
 `pullZone.not_found`), `$field`, `$requestId` (quote it when contacting bunny.net
 support) and the raw `$responseBody`. Network failures throw a
 `TransportException`, unexpected response bodies a `SerializationException`.
+
+The Shield API reports many failures with `202 Accepted` and the error in the
+body. These are raised, too: as `NotFoundException` for error keys starting with
+`not_found`, otherwise as `ApiException` (e.g. `invalid_plan_type.bot_detection`
+for a feature the zone's plan lacks). `$statusCode` keeps the actual status.
 
 ```php
 use GoSuccess\Bunny\Exception\NotFoundException;

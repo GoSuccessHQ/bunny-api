@@ -41,6 +41,7 @@ $apis = [
         new DocTarget(null, StorageClient::class, 'Files and directories of one storage zone.'),
     ]),
     'stream',
+    'shield',
 ];
 
 /**

@@ -18,4 +18,5 @@ BUNNY_API_KEY=your-api-key php examples/core-pull-zones.php
 | [logging.php](logging.php) | Recent failed requests from the CDN logs |
 | [storage.php](storage.php) | Browsing a storage zone with its read-only password |
 | [stream.php](stream.php) | Videos, collections and views of a video library with its read-only key |
+| [shield.php](shield.php) | Shield zones with plan, WAF mode, rate limits and yesterday's event logs |
 | [error-handling.php](error-handling.php) | Typed exceptions and the details they carry |

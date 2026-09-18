@@ -13,6 +13,7 @@ use GoSuccess\Bunny\Logging\LoggingClient;
 use GoSuccess\Bunny\OriginErrors\OriginErrorsClient;
 use GoSuccess\Bunny\RateLimit\NullRateLimiter;
 use GoSuccess\Bunny\RateLimit\RateLimiter;
+use GoSuccess\Bunny\Shield\ShieldClient;
 use GoSuccess\Bunny\Storage\StorageClient;
 use GoSuccess\Bunny\Storage\StorageRegion;
 use GoSuccess\Bunny\Stream\StreamClient;
@@ -57,6 +58,14 @@ final class Bunny
      */
     public private(set) LoggingClient $logging {
         get => $this->logging ??= new LoggingClient($this->apiKey, $this->options, $this->httpClient, $this->rateLimiter);
+    }
+
+    /**
+     * The Shield API: WAF, rate limits, access lists, bot detection and more
+     * for the protection of pull zones.
+     */
+    public private(set) ShieldClient $shield {
+        get => $this->shield ??= new ShieldClient($this->apiKey, $this->options, $this->httpClient, $this->rateLimiter);
     }
 
     private readonly HttpClient $httpClient;
