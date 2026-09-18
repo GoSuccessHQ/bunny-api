@@ -71,7 +71,11 @@ final class ResourceBuilder
         [$bodyRequired, $bodyOptional] = $config->handwritten ? [[], []] : $this->body($operation, $config, $context);
         $required = [...$required, ...$bodyRequired];
 
+        $queryNames = [];
+
         foreach ($operation->parametersIn('query') as $parameter) {
+            $queryNames[] = $parameter->name;
+
             if (\in_array($parameter->name, $config->hidden, true)) {
                 continue;
             }
@@ -85,6 +89,10 @@ final class ResourceBuilder
             }
         }
 
+        foreach (array_diff($config->required, $queryNames) as $unknown) {
+            throw new RuntimeException("{$context}: {$unknown} is marked required, but is no query parameter.");
+        }
+
         foreach ($operation->parametersIn('header') as $parameter) {
             if (!\in_array($parameter->name, $config->hidden, true) && strtolower($parameter->name) !== 'accesskey') {
                 throw new RuntimeException("{$context}: header parameter {$parameter->name} is not supported; hide it or write the method by hand.");
@@ -92,7 +100,12 @@ final class ResourceBuilder
         }
 
         $method->parameters = [...$required, ...$optional, ...$bodyOptional];
-        $this->response($method, $config, $operation, $context);
+
+        // Hand-written methods read their responses themselves; the models they
+        // use are listed as extraModels.
+        if (!$config->handwritten) {
+            $this->response($method, $config, $operation, $context);
+        }
 
         return $method;
     }
@@ -120,11 +133,13 @@ final class ResourceBuilder
                 throw new RuntimeException("{$context}: unsupported path parameter type {$type->kind} for {$placeholder}.");
             }
 
+            $isClientParameter = isset($this->registry->config->clientParameters[$placeholder]);
+
             $definitions[] = new ParameterDefinition(
                 specName: $placeholder,
-                phpName: $config->parameters[$placeholder] ?? Naming::camel($placeholder),
+                phpName: $isClientParameter ? $placeholder : ($config->parameters[$placeholder] ?? Naming::camel($placeholder)),
                 type: $type,
-                location: ParameterDefinition::PATH,
+                location: $isClientParameter ? ParameterDefinition::CLIENT : ParameterDefinition::PATH,
                 nullable: false,
                 default: null,
                 description: $parameter->description(),
@@ -241,8 +256,9 @@ final class ResourceBuilder
 
         $name = $method->config->parameters[$parameter->name] ?? Naming::camel($parameter->name);
         $pagination = $method->pagination;
-        $default = $parameter->required ? null : 'null';
-        $nullable = !$parameter->required;
+        $required = $parameter->required || \in_array($parameter->name, $method->config->required, true);
+        $default = $required ? null : 'null';
+        $nullable = !$required;
 
         $description = $parameter->description();
 
@@ -281,13 +297,20 @@ final class ResourceBuilder
         $responses = $operation->successResponses();
 
         foreach ($operation->successContentTypes() as $type) {
-            if (\in_array($type, self::RAW_TYPES, true) && !$config->handwritten && $config->response === null) {
+            if (\in_array($type, self::RAW_TYPES, true) && $config->response === null) {
                 throw new RuntimeException("{$context}: returns {$type} and needs a hand-written method.");
             }
         }
 
         if ($config->response === 'void') {
             return;
+        }
+
+        foreach ($responses as $code => $candidate) {
+            if ($candidate !== null && \in_array($candidate->resolvedName(), $this->registry->config->voidResponses, true)) {
+                // e.g. Stream's {"success", "message", "statusCode"}: errors arrive as HTTP errors.
+                $responses[$code] = null;
+            }
         }
 
         $schema = null;

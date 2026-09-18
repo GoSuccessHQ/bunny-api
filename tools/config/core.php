@@ -57,7 +57,8 @@ return [
 
     'enumCases' => [],
 
-    'extraModels' => [],
+    // Returned by the hand-written dnsZones->import().
+    'extraModels' => ['DnsZoneImportResultModel'],
 
     'pagination' => [
         // Items, CurrentPage, TotalItems, HasMoreItems. The API silently raises a

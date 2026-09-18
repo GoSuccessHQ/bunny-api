@@ -35,12 +35,13 @@ final class ClientWriter
         $sensitive = $file->alias('SensitiveParameter');
 
         $properties = '';
+        $resourceArguments = implode('', array_map(static fn(string $name): string => ", \$this->{$name}", array_keys($this->config->clientParameters)));
 
         foreach ($resources as $resource) {
             $class = $file->alias($resource->class);
             $property = $resource->config->property;
             $properties .= Doc::block([[$resource->config->description]], '    ');
-            $properties .= "    public private(set) {$class} \${$property} {\n        get => \$this->{$property} ??= new {$class}(\$this->connection);\n    }\n\n";
+            $properties .= "    public private(set) {$class} \${$property} {\n        get => \$this->{$property} ??= new {$class}(\$this->connection{$resourceArguments});\n    }\n\n";
         }
 
         $credential = $this->config->credential;
@@ -48,11 +49,15 @@ final class ClientWriter
             Doc::lines($description),
             ['Resources are created on first access, so unused ones cost nothing.'],
         ]);
+        $clientParameters = [];
+
+        foreach ($this->config->clientParameters as $name => $parameter) {
+            $clientParameters[] = [$parameter['type'], "\${$name}", $parameter['description']];
+        }
+
         $parameters = [
-            ['string', "\${$credential}", match ($credential) {
-                'apiKey' => 'The account API key (bunny.net dashboard → Account settings → API key).',
-                default => 'The access key.',
-            }],
+            ...$clientParameters,
+            ['string', "\${$credential}", $this->config->credentialDescription],
             ['ClientOptions', '$options', 'Timeouts, retries and user agent.'],
             ['HttpClient|null', '$httpClient', 'Custom transport; defaults to the built-in cURL transport.'],
             ['RateLimiter', '$rateLimiter', 'Client-side throttling; disabled by default.'],
@@ -65,12 +70,19 @@ final class ClientWriter
             $parameters,
         )], '    ');
 
+        $promoted = '';
+
+        foreach ($this->config->clientParameters as $name => $parameter) {
+            $promoted .= "        public readonly {$parameter['type']} \${$name},\n";
+        }
+
         $body = "{$doc}final class {$this->config->client}\n{\n"
             . "    public const string DEFAULT_BASE_URI = '{$this->config->baseUri}';\n\n"
             . $properties
             . "    private readonly {$connection} \$connection;\n\n"
             . $constructorDoc
             . "    public function __construct(\n"
+            . $promoted
             . "        #[{$sensitive}]\n"
             . "        string \${$credential},\n"
             . "        {$options} \$options = new {$options}(),\n"

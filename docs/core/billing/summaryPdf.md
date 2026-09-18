@@ -14,7 +14,7 @@ public function summaryPdf(int $billingRecordId): string
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `$billingRecordId` | `int` | yes | The ID of the billing record, see {@see BillingResource::details()}. |
+| `$billingRecordId` | `int` | yes | The ID of the billing record, see `BillingResource::details()`. |
 
 ## Returns
 

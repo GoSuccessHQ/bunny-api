@@ -134,8 +134,14 @@ final class GeneratedResourcesTest extends TestCase
     private function client(Analysis $analysis, MockHttpClient $http): object
     {
         $class = "GoSuccess\\Bunny\\{$analysis->config->namespace}\\{$analysis->config->client}";
+        $arguments = array_map(static fn(array $parameter): int|string => self::clientValue($parameter['type']), $analysis->config->clientParameters);
 
-        return new $class('secret', httpClient: $http);
+        return new $class(...[...$arguments, $analysis->config->credential => 'secret', 'httpClient' => $http]);
+    }
+
+    private static function clientValue(string $type): int|string
+    {
+        return $type === 'int' ? 7 : 'sample';
     }
 
     /**
@@ -152,6 +158,13 @@ final class GeneratedResourcesTest extends TestCase
         foreach ($method->parameters as $parameter) {
             $value = $samples->php($parameter->type);
             $arguments[$parameter->phpName] = $value;
+
+            if ($parameter->location === ParameterDefinition::CLIENT) {
+                unset($arguments[$parameter->phpName]);
+                $path = str_replace("{{$parameter->specName}}", (string) self::clientValue($parameter->type->kind), $path);
+
+                continue;
+            }
 
             match ($parameter->location) {
                 ParameterDefinition::PATH => $path = str_replace("{{$parameter->specName}}", rawurlencode(Query::format('path', $value)), $path),

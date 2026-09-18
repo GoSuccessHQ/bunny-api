@@ -26,6 +26,8 @@ final readonly class MethodConfig
      *                                               method parameters instead of a model.
      * @param array<string, string>     $parameters  Spec parameter name => PHP parameter name.
      * @param list<string>              $hidden      Spec parameters that are not exposed.
+     * @param list<string>              $required    Spec query parameters to treat as required
+     *                                               where the specification marks them optional.
      * @param string|null               $note        Extra paragraph for the docblock.
      */
     public function __construct(
@@ -41,6 +43,7 @@ final readonly class MethodConfig
         public bool $flatten = false,
         public array $parameters = [],
         public array $hidden = [],
+        public array $required = [],
         public ?string $note = null,
     ) {}
 
@@ -59,6 +62,7 @@ final readonly class MethodConfig
             flatten: $reader->bool('flatten'),
             parameters: $reader->stringMapAt('parameters'),
             hidden: $reader->stringList('hidden'),
+            required: $reader->stringList('required'),
             note: $reader->optionalString('note'),
         );
 

@@ -35,6 +35,7 @@ final class Generator
     {
         $config = ApiConfig::load($this->configFile);
         $spec = Spec::load($config->spec, "{$this->root}/resources/specs/{$config->spec}.json");
+        $this->checkSchemaNames($spec, $config);
         $registry = new Registry($spec, $config);
         $builder = new ResourceBuilder($registry);
 
@@ -111,24 +112,60 @@ final class Generator
     }
 
     /**
+     * Schema names in the configuration must exist, or a typo would silently
+     * change nothing.
+     */
+    private function checkSchemaNames(Spec $spec, ApiConfig $config): void
+    {
+        $names = [
+            ...array_keys($config->schemas),
+            ...array_map(static fn(string $property): string => explode('.', $property, 2)[0], array_keys($config->properties)),
+            ...array_keys($config->enumCases),
+            ...$config->extraModels,
+            ...$config->voidResponses,
+        ];
+        $unknown = array_unique(array_filter($names, static fn(string $name): bool => !$spec->hasSchema($name)));
+
+        if ($unknown !== []) {
+            throw new RuntimeException('Unknown schemas in the configuration: ' . implode(', ', $unknown) . '.');
+        }
+    }
+
+    /**
      * Every operation must be implemented exactly once or ignored with a reason.
      *
      * @param list<ResourceDefinition> $resources
      */
     private function checkCoverage(Spec $spec, ApiConfig $config, array $resources): void
     {
-        $implemented = [];
+        $generated = [];
 
         foreach ($resources as $resource) {
-            foreach ([...$resource->methods, ...array_values($resource->handwritten)] as $method) {
+            foreach ($resource->methods as $method) {
                 $id = $method->operation->id;
                 $where = "{$resource->config->class}::{$method->config->name}";
 
-                if (isset($implemented[$id])) {
-                    throw new RuntimeException("Operation {$id} is implemented twice: {$implemented[$id]} and {$where}.");
+                if (isset($generated[$id])) {
+                    throw new RuntimeException("Operation {$id} is implemented twice: {$generated[$id]} and {$where}.");
                 }
 
-                $implemented[$id] = $where;
+                $generated[$id] = $where;
+            }
+        }
+
+        // Several hand-written methods may share one operation, e.g. the ways of
+        // setting a Stream thumbnail; a generated method must be alone.
+        $implemented = $generated;
+
+        foreach ($resources as $resource) {
+            foreach ($resource->handwritten as $method) {
+                $id = $method->operation->id;
+
+                if (isset($generated[$id])) {
+                    throw new RuntimeException("Operation {$id} is both generated ({$generated[$id]}) and hand-written.");
+                }
+
+                $implemented[$id] = "{$resource->config->class}::{$method->config->name}";
             }
         }
 

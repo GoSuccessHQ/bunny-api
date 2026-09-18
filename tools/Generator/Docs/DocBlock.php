@@ -55,7 +55,7 @@ final readonly class DocBlock
         }
 
         $paragraphs = array_values(array_filter(
-            array_map(static fn(string $paragraph): string => trim((string) preg_replace('/\s*\n\s*/', ' ', $paragraph)), explode("\n\n", implode("\n", $text))),
+            array_map(static fn(string $paragraph): string => self::inline(trim((string) preg_replace('/\s*\n\s*/', ' ', $paragraph))), explode("\n\n", implode("\n", $text))),
             static fn(string $paragraph): bool => $paragraph !== '',
         ));
 
@@ -76,7 +76,7 @@ final readonly class DocBlock
 
         foreach ($tags as $tag) {
             if (preg_match('/^@param\s+(\S+)\s+\$(\w+)\s*(.*)$/s', $tag, $match)) {
-                $params[$match[2]] = ['type' => $match[1], 'description' => trim($match[3])];
+                $params[$match[2]] = ['type' => $match[1], 'description' => self::inline(trim($match[3]))];
             } elseif (preg_match('/^@return\s+(\S+)/', $tag, $match)) {
                 $return = $match[1];
             } elseif (str_starts_with($tag, '@deprecated')) {
@@ -85,5 +85,23 @@ final readonly class DocBlock
         }
 
         return new self($summary, $paragraphs, $endpoint, $params, $return, $deprecated);
+    }
+
+    /**
+     * Turn inline tags such as `{@see \Foo\Bar}` into code spans with the short
+     * name, since Markdown has no use for them.
+     */
+    private static function inline(string $text): string
+    {
+        return preg_replace_callback(
+            '/\{@(?:see|link)\s+([^\s}]+)[^}]*\}/',
+            static function (array $match): string {
+                $separator = strrpos($match[1], '\\');
+                $name = $separator === false ? $match[1] : substr($match[1], $separator + 1);
+
+                return "`{$name}`";
+            },
+            $text,
+        ) ?? $text;
     }
 }

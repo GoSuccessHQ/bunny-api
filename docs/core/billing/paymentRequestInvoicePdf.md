@@ -14,7 +14,7 @@ public function paymentRequestInvoicePdf(int $id): string
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `$id` | `int` | yes | The ID of the payment request, see {@see BillingResource::paymentRequests()}. |
+| `$id` | `int` | yes | The ID of the payment request, see `BillingResource::paymentRequests()`. |
 
 ## Returns
 

@@ -40,12 +40,34 @@ final class ResourceWriter
         $trait = '';
 
         if ($resource->config->handwritten) {
-            $trait = '    use ' . $file->alias("{$namespace}\\Handwritten\\{$resource->config->traitName()}") . ";\n" . ($methods === [] ? '' : "\n");
+            $trait = '    use ' . $file->alias("{$namespace}\\Handwritten\\{$resource->config->traitName()}") . ";\n\n";
         }
 
         $doc = Doc::block([[$resource->config->description]]);
+        $body = $trait . $this->constructor($file) . implode("\n", $methods);
 
-        return $file->render("{$doc}final class {$short} extends {$base}\n{\n{$trait}" . implode("\n", $methods) . "}\n", $source);
+        return $file->render("{$doc}final class {$short} extends {$base}\n{\n" . rtrim($body, "\n") . "\n}\n", $source);
+    }
+
+    /**
+     * Resources of an API with client parameters receive them from the client.
+     */
+    private function constructor(CodeFile $file): string
+    {
+        if ($this->config->clientParameters === []) {
+            return '';
+        }
+
+        $connection = $file->alias('GoSuccess\\Bunny\\Http\\Connection');
+        $parameters = [];
+
+        foreach ($this->config->clientParameters as $name => $parameter) {
+            $parameters[] = "private readonly {$parameter['type']} \${$name}";
+        }
+
+        return "    /**\n     * @internal Created by the client.\n     */\n"
+            . "    public function __construct({$connection} \$connection, " . implode(', ', $parameters) . ")\n"
+            . "    {\n        parent::__construct(\$connection);\n    }\n\n";
     }
 
     private function regular(MethodDefinition $method, CodeFile $file): string
@@ -102,7 +124,7 @@ final class ResourceWriter
         $filters = [];
         $size = null;
 
-        foreach ($method->parameters as $parameter) {
+        foreach (self::exposed($method->parameters) as $parameter) {
             if ($parameter->location === ParameterDefinition::QUERY && $parameter->specName === $pagination->position) {
                 continue;
             }
@@ -127,7 +149,7 @@ final class ResourceWriter
         $allParameters = $size === null ? $filters : [...$filters, $size];
         $arguments = [];
 
-        foreach ($method->parameters as $parameter) {
+        foreach (self::exposed($method->parameters) as $parameter) {
             $arguments[] = $parameter->location === ParameterDefinition::QUERY && $parameter->specName === $pagination->position
                 ? "{$parameter->phpName}: " . ($pagination->positionType === 'int'
                     ? '\\is_int($position) ? $position : ' . ($pagination->first ?? 1)
@@ -216,7 +238,7 @@ final class ResourceWriter
         $path = ltrim($method->operation->path, '/');
         $byName = [];
 
-        foreach ($method->parametersIn(ParameterDefinition::PATH) as $parameter) {
+        foreach ([...$method->parametersIn(ParameterDefinition::PATH), ...$method->parametersIn(ParameterDefinition::CLIENT)] as $parameter) {
             $byName[$parameter->specName] = $parameter;
         }
 
@@ -227,9 +249,9 @@ final class ResourceWriter
         $interpolated = preg_replace_callback('/\{([^}]+)\}/', static function (array $match) use ($byName): string {
             $parameter = $byName[$match[1]] ?? throw new LogicException("Unknown placeholder {$match[1]}.");
 
-            return $parameter->type->kind === PhpType::INT
-                ? "{\${$parameter->phpName}}"
-                : "{\$this->segment(\${$parameter->phpName})}";
+            $variable = $parameter->location === ParameterDefinition::CLIENT ? "\$this->{$parameter->phpName}" : "\${$parameter->phpName}";
+
+            return $parameter->type->kind === PhpType::INT ? "{{$variable}}" : "{\$this->segment({$variable})}";
         }, str_replace(['\\', '"', '$'], ['\\\\', '\\"', '\\$'], $path));
 
         return "\"{$interpolated}\"";
@@ -240,6 +262,8 @@ final class ResourceWriter
      */
     private function signature(array $parameters, CodeFile $file): string
     {
+        $parameters = self::exposed($parameters);
+
         if ($parameters === []) {
             return '';
         }
@@ -345,6 +369,7 @@ final class ResourceWriter
             PhpType::ENUM => "{$expression}{$safe}value",
             PhpType::MODEL => "{$expression}{$safe}toArray()",
             PhpType::DATE => "{$file->alias(self::JSON)}::date({$expression})",
+            PhpType::MAP, PhpType::OBJECT => "{$file->alias(self::JSON)}::map({$expression})",
             PhpType::LIST => match ($type->itemOrFail()->kind) {
                 PhpType::MODEL => "array_map(static fn({$file->alias($type->itemOrFail()->classOrFail())} \$item): array => \$item->toArray(), {$expression})",
                 PhpType::ENUM => "array_map(static fn({$file->alias($type->itemOrFail()->classOrFail())} \$item): {$type->itemOrFail()->backing} => \$item->value, {$expression})",
@@ -370,6 +395,7 @@ final class ResourceWriter
 
         $endpoint = ["`{$operation->method} {$operation->path}`"];
         $note = Doc::lines($method->config->note);
+        $parameters = self::exposed($parameters);
 
         $paramLines = [];
         $types = [];
@@ -391,6 +417,18 @@ final class ResourceWriter
         }
 
         return Doc::block([$summaryLines, $description, $note, $endpoint, $paramLines, $tags], '    ');
+    }
+
+    /**
+     * The parameters a caller passes; client parameters come from the client.
+     *
+     * @param list<ParameterDefinition> $parameters
+     *
+     * @return list<ParameterDefinition>
+     */
+    private static function exposed(array $parameters): array
+    {
+        return array_values(array_filter($parameters, static fn(ParameterDefinition $parameter): bool => $parameter->location !== ParameterDefinition::CLIENT));
     }
 
     private function parameterDocType(ParameterDefinition $parameter, CodeFile $file): string

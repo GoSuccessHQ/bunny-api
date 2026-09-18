@@ -22,10 +22,14 @@ final readonly class ApiConfig
      * @param string                              $client            Class name of the API client.
      * @param string                              $baseUri           Default base URI.
      * @param string                              $credential        Name of the constructor argument holding the key.
+     * @param string                              $credentialDescription How to obtain the key, for the docblock.
      * @param array<string, string|false>         $schemas           Schema name => class name, or false to skip it.
      * @param array<string, string>               $properties        "Schema.Property" => PHP property name.
      * @param array<string, array<int|string, string>> $enumCases   Schema name => value => case name.
      * @param list<string>                        $extraModels       Schemas generated for hand-written code.
+     * @param array<string, array{type: string, description: string}> $clientParameters Path parameters the client
+     *                                                               receives once in its constructor instead of every method.
+     * @param list<string>                        $voidResponses     Schemas that carry no payload, e.g. a bare status envelope.
      * @param array<string, PaginationConfig>     $pagination        Pagination styles, keyed by name.
      * @param array<string, ResourceConfig>       $resources         Keyed by the client property name.
      * @param array<string, string>               $ignored           Operation id => reason for not implementing it.
@@ -38,10 +42,13 @@ final readonly class ApiConfig
         public string $client,
         public string $baseUri,
         public string $credential,
+        public string $credentialDescription,
         public array $schemas,
         public array $properties,
         public array $enumCases,
         public array $extraModels,
+        public array $clientParameters,
+        public array $voidResponses,
         public array $pagination,
         public array $resources,
         public array $ignored,
@@ -69,6 +76,14 @@ final readonly class ApiConfig
             $pagination[(string) $style] = PaginationConfig::fromArray((string) $style, $reader->nested($definition, "pagination.{$style}"));
         }
 
+        $clientParameters = [];
+
+        foreach ($reader->map('clientParameters') as $name => $definition) {
+            $parameter = $reader->nested($definition, "clientParameters.{$name}");
+            $clientParameters[(string) $name] = ['type' => $parameter->string('type'), 'description' => $parameter->string('description')];
+            $parameter->assertNoUnknownKeys();
+        }
+
         $enumCases = [];
 
         foreach ($reader->map('enumCases') as $schema => $cases) {
@@ -83,10 +98,13 @@ final readonly class ApiConfig
             client: $reader->string('client'),
             baseUri: $reader->string('baseUri'),
             credential: $reader->string('credential'),
+            credentialDescription: $reader->string('credentialDescription', 'The account API key (bunny.net dashboard → Account settings → API key).'),
             schemas: $reader->schemaMap('schemas'),
             properties: $reader->stringMapAt('properties'),
             enumCases: $enumCases,
             extraModels: $reader->stringList('extraModels'),
+            clientParameters: $clientParameters,
+            voidResponses: $reader->stringList('voidResponses'),
             pagination: $pagination,
             resources: $resources,
             ignored: $reader->stringMapAt('ignored'),

@@ -17,6 +17,8 @@ final readonly class ParameterDefinition
     public const string BODY = 'body';
     /** The request body model itself. */
     public const string PAYLOAD = 'payload';
+    /** A path parameter the client supplies, e.g. the Stream library ID. */
+    public const string CLIENT = 'client';
 
     /**
      * @param string      $specName Name in the specification (query key, path placeholder or body key).
