@@ -24,12 +24,17 @@ final readonly class ClientOptions
      *                                limit; a transfer that stalls for 60 seconds is still
      *                                aborted.
      * @param int    $maxRetries      How often a failed request is retried. A `429` is
-     *                                always retried; server errors and network failures only
-     *                                for idempotent requests (GET, PUT, DELETE).
+     *                                retried unless `$retryOnRateLimit` is off; server errors
+     *                                and network failures only for idempotent requests (GET,
+     *                                PUT, DELETE).
      * @param float  $retryBaseDelay  Base delay in seconds of the exponential backoff.
      * @param float  $maxRetryDelay   Upper bound in seconds for a single wait, which also
      *                                caps a server-provided `Retry-After`.
      * @param string $userAgent       Value of the `User-Agent` header.
+     * @param bool   $retryOnRateLimit Wait for `Retry-After` and retry a `429`. Off, a `429`
+     *                                throws the RateLimitException at once, while server errors
+     *                                and network failures are still retried. For callers that
+     *                                must answer within a deadline of their own.
      */
     public function __construct(
         public float $timeout = 30.0,
@@ -39,6 +44,7 @@ final readonly class ClientOptions
         public float $retryBaseDelay = 1.0,
         public float $maxRetryDelay = 60.0,
         public string $userAgent = self::DEFAULT_USER_AGENT,
+        public bool $retryOnRateLimit = true,
     ) {
         foreach (['timeout' => $timeout, 'connectTimeout' => $connectTimeout, 'transferTimeout' => $transferTimeout, 'retryBaseDelay' => $retryBaseDelay, 'maxRetryDelay' => $maxRetryDelay] as $name => $value) {
             if ($value < 0.0) {

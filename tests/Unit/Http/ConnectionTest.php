@@ -84,6 +84,36 @@ final class ConnectionTest extends TestCase
         self::assertSame([5.0], $clock->sleeps);
     }
 
+    public function testFailsAt429RightAwayWhenRateLimitsAreNotRetried(): void
+    {
+        $http = new MockHttpClient(
+            new Response(429, '', ['retry-after' => '5']),
+            new Response(200, '[]'),
+        );
+        $clock = new FakeClock();
+
+        try {
+            $this->connection($http, new ClientOptions(retryOnRateLimit: false), $clock)->json(Method::Post, 'purge');
+            self::fail('Expected a RateLimitException.');
+        } catch (RateLimitException $e) {
+            self::assertSame(5, $e->retryAfter);
+        }
+
+        self::assertSame(1, $http->callCount());
+        self::assertSame([], $clock->sleeps);
+    }
+
+    public function testStillRetriesServerAndTransportErrorsWhenRateLimitsAreNotRetried(): void
+    {
+        $http = new MockHttpClient(new Response(503), new TransportException('reset'), new Response(200, '{}'));
+        $clock = new FakeClock();
+
+        $this->connection($http, new ClientOptions(retryOnRateLimit: false), $clock)->json(Method::Get, 'pullzone');
+
+        self::assertSame(3, $http->callCount());
+        self::assertSame([1.0, 2.0], $clock->sleeps);
+    }
+
     public function testCapsAnExcessiveRetryAfter(): void
     {
         $http = new MockHttpClient(

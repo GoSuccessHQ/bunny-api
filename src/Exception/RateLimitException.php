@@ -7,8 +7,8 @@ namespace GoSuccess\Bunny\Exception;
 /**
  * The request was rejected because a rate limit was exceeded (HTTP 429).
  *
- * The client already retries such requests automatically; this exception is
- * only thrown once all retries are used up. {@see $retryAfter} holds the number
+ * The client retries such requests automatically; this exception is thrown
+ * once all retries are used up, or at once with `retryOnRateLimit` off. {@see $retryAfter} holds the number
  * of seconds to wait when the API sent a `Retry-After` header.
  */
 final class RateLimitException extends ApiException

@@ -635,12 +635,16 @@ $bunny = new Bunny('your-account-api-key', new ClientOptions(
     maxRetries: 3,
     retryBaseDelay: 1.0,    // exponential backoff: 1 s, 2 s, 4 s, ...
     maxRetryDelay: 60.0,    // also caps a server-provided Retry-After
+    retryOnRateLimit: true, // false: a 429 throws at once instead of waiting
 ));
 ```
 
-A `429` is always retried. A server error or a lost connection is only retried
-for `GET`, `PUT` and `DELETE`, because bunny.net applies most changes via `POST`
-and repeating such a request could apply it twice.
+A `429` is retried after `Retry-After` unless `retryOnRateLimit` is off; then
+it throws the `RateLimitException` right away, which suits callers that have
+to answer within a deadline of their own. A server error or a lost connection
+is only retried for `GET`, `PUT` and `DELETE`, because bunny.net applies most
+changes via `POST` and repeating such a request could apply it twice. Both
+are retried regardless of `retryOnRateLimit`.
 
 ### Rate limiting
 
